@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  OWNER
+  EMPLOYEE
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum SocialPlatform {
+  INSTAGRAM
+}
+
+enum SocialAccountStatus {
+  PENDING
+  CONNECTED
+  DISCONNECTED
+}
+
+enum MessageStatus {
+  NEW
+  REPLIED
+  CLOSED
+}
+
+enum AutomationStatus {
+  PENDING
+  IN_PROGRESS
+  DONE
+  REJECTED
+}
+
+model User {
+  id          String     @id @default(cuid())
+  email       String     @unique
+  password    String
+  name        String
+  role        Role       @default(OWNER)
+  status      UserStatus @default(PENDING)
+  companyName String?
+
+  customerId String?
+  customer   Customer? @relation("EmployeeCustomer", fields: [customerId], references: [id])
+
+  ownedCustomer    Customer?        @relation("OwnerCustomer")
+  messageReplies   MessageReply[]
+  notifications    Notification[]
+  leadsCreated     Lead[]           @relation("LeadCreatedBy")
+  paymentsReviewed PaymentRequest[] @relation("PaymentReviewedBy")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Customer {
+  id                     String    @id @default(cuid())
+  userId                 String    @unique
+  user                   User      @relation("OwnerCustomer", fields: [userId], references: [id])
+  companyName            String
+  packageId              String
+  package                Package   @relation(fields: [packageId], references: [id])
+  automationRequestCount Int       @default(0)
+  approvedAt             DateTime?
+  approvedBy             String?
+
+  employees          User[]              @relation("EmployeeCustomer")
+  socialAccounts     SocialAccount[]
+  messages           Message[]
+  leads              Lead[]
+  automationRequests AutomationRequest[]
+  paymentRequests    PaymentRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Package {
+  id              String     @id @default(cuid())
+  name            String
+  price           Int
+  automationLimit Int        @default(2)
+  customers       Customer[]
+}
+
+model PaymentRequest {
+  id         String        @id @default(cuid())
+  customerId String
+  customer   Customer      @relation(fields: [customerId], references: [id])
+  amount     Int
+  status     PaymentStatus @default(PENDING)
+  notifiedAt DateTime?
+  reviewedAt DateTime?
+  reviewedBy String?
+  reviewer   User?         @relation("PaymentReviewedBy", fields: [reviewedBy], references: [id])
+  notes      String?
+
+  createdAt DateTime @default(now())
+}
+
+model SocialAccount {
+  id             String              @id @default(cuid())
+  customerId     String
+  customer       Customer            @relation(fields: [customerId], references: [id])
+  platform       SocialPlatform      @default(INSTAGRAM)
+  handle         String
+  manychatPageId String?
+  status         SocialAccountStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id            String         @id @default(cuid())
+  customerId    String
+  customer      Customer       @relation(fields: [customerId], references: [id])
+  platform      SocialPlatform
+  externalId    String         @unique
+  senderName    String
+  senderContact String?
+  content       String
+  receivedAt    DateTime       @default(now())
+  isLead        Boolean        @default(false)
+  status        MessageStatus  @default(NEW)
+  threadId      String?
+
+  replies MessageReply[]
+  lead    Lead?
+
+  @@index([customerId, status])
+  @@index([customerId, receivedAt])
+}
+
+model MessageReply {
+  id                String   @id @default(cuid())
+  messageId         String
+  message           Message  @relation(fields: [messageId], references: [id])
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  content           String
+  sentAt            DateTime @default(now())
+  sentViaManychat   Boolean  @default(false)
+  manychatMessageId String?
+}
+
+model Lead {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  messageId  String?  @unique
+  message    Message? @relation(fields: [messageId], references: [id])
+  name       String
+  contact    String?
+  notes      String?
+  createdAt  DateTime @default(now())
+  createdBy  String
+  creator    User     @relation("LeadCreatedBy", fields: [createdBy], references: [id])
+
+  @@index([customerId])
+}
+
+model AutomationRequest {
+  id          String           @id @default(cuid())
+  customerId  String
+  customer    Customer         @relation(fields: [customerId], references: [id])
+  description String
+  isExtra     Boolean          @default(false)
+  extraPrice  Int?
+  status      AutomationStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String
+  title     String
+  body      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+}
