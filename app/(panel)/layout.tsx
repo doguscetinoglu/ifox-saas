@@ -16,6 +16,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
       { href: '/panel/leadler', icon: '🎯', label: 'Leadler' },
       { href: '/panel/raporlar', icon: '📈', label: 'Raporlar' },
       { href: '/panel/otomasyon-talebi', icon: '🤖', label: 'Otomasyon' },
+      { href: '/panel/hesap', icon: '👤', label: 'Hesabım' },
       { href: '/panel/ayarlar', icon: '⚙️', label: 'Ayarlar' },
     ] : []),
   ]
@@ -79,7 +80,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
             <ThemeToggle />
           </div>
         </header>
-        <main className="flex-1 p-6 page-enter">{children}</main>
+        <main className="flex-1 p-6 page-enter panel-bg">{children}</main>
       </div>
     </div>
   )

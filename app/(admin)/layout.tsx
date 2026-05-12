@@ -8,6 +8,7 @@ const navItems = [
   { href: '/admin/odemeler', icon: '💳', label: 'Ödeme Onayları' },
   { href: '/admin/uyeler', icon: '👥', label: 'Üyeler' },
   { href: '/admin/otomasyon', icon: '🤖', label: 'Otomasyon' },
+  { href: '/admin/gelir', icon: '💰', label: 'Gelir Raporu' },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
