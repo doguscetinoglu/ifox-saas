@@ -1,10 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
 
 export default function OdemePage() {
   const [notified, setNotified] = useState(false)
@@ -22,69 +18,62 @@ export default function OdemePage() {
 
   if (notified) {
     return (
-      <Card>
-        <CardContent className="p-8 text-center space-y-4">
-          <div className="text-5xl">✅</div>
-          <h2 className="text-xl font-semibold">Ödeme Bildirimi Alındı</h2>
-          <p className="text-muted-foreground">
-            Ödemeniz inceleniyor. Onaylandığında e-posta alacaksınız.
-            Ortalama onay süresi 1-4 saattir.
-          </p>
-          <Badge variant="secondary">Bekleniyor</Badge>
-        </CardContent>
-      </Card>
+      <div className="w-full max-w-md glass rounded-3xl p-10 shadow-2xl text-center space-y-4">
+        <div className="text-6xl mb-4">✅</div>
+        <h2 className="text-xl font-bold">Ödeme Bildirimi Alındı</h2>
+        <p className="text-muted-foreground text-sm leading-relaxed">
+          Ödemeniz inceleniyor. Onaylandığında e-posta alacaksınız.
+          Ortalama onay süresi <strong>1–4 saattir.</strong>
+        </p>
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 text-amber-500 text-sm font-medium">
+          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+          İnceleniyor
+        </div>
+      </div>
     )
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Ödeme Bilgileri</CardTitle>
-        <CardDescription>
-          Aşağıdaki IBAN&apos;a aylık ücret olan <strong>₺2.000</strong> tutarı gönderin,
-          ardından &quot;Ödemeyi Bildirdim&quot; butonuna tıklayın.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="bg-muted rounded-lg p-6 space-y-4">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground text-sm">Banka</span>
-            <span className="font-medium">{process.env.NEXT_PUBLIC_IBAN_BANK || 'Banka Adı'}</span>
-          </div>
-          <Separator />
-          <div className="flex justify-between">
-            <span className="text-muted-foreground text-sm">Hesap Sahibi</span>
-            <span className="font-medium">{process.env.NEXT_PUBLIC_IBAN_HOLDER || 'Ad Soyad'}</span>
-          </div>
-          <Separator />
-          <div className="space-y-1">
-            <span className="text-muted-foreground text-sm">IBAN</span>
-            <p className="font-mono font-semibold text-sm break-all">
-              {process.env.NEXT_PUBLIC_IBAN_NUMBER || 'TR00 0000 0000 0000 0000 0000 00'}
-            </p>
-          </div>
-          <Separator />
-          <div className="flex justify-between">
-            <span className="text-muted-foreground text-sm">Tutar</span>
-            <span className="font-bold text-lg text-primary">₺2.000</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground text-sm">Açıklama (opsiyonel)</span>
-            <span className="font-medium text-sm">iFox Social</span>
-          </div>
+    <div className="w-full max-w-md glass rounded-3xl p-8 shadow-2xl">
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4"
+          style={{ background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' }}>
+          <span className="text-2xl">💳</span>
         </div>
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
-          Ödeme yaptıktan sonra aşağıdaki butona tıklayın. Ödemeniz en geç 4 saat içinde onaylanır.
+        <h1 className="text-2xl font-bold">Ödeme Bilgileri</h1>
+        <p className="text-muted-foreground text-sm mt-1">
+          Aşağıdaki IBAN&apos;a <strong className="text-foreground">₺2.000</strong> transfer yapın
+        </p>
+      </div>
+
+      <div className="space-y-3 mb-6">
+        {[
+          { label: 'Banka', value: process.env.NEXT_PUBLIC_IBAN_BANK || 'Banka Adı' },
+          { label: 'Hesap Sahibi', value: process.env.NEXT_PUBLIC_IBAN_HOLDER || 'Ad Soyad' },
+          { label: 'Tutar', value: '₺2.000' },
+        ].map(({ label, value }) => (
+          <div key={label} className="flex items-center justify-between px-4 py-3 rounded-xl glass-subtle">
+            <span className="text-xs text-muted-foreground uppercase tracking-wide">{label}</span>
+            <span className="text-sm font-semibold">{value}</span>
+          </div>
+        ))}
+        <div className="px-4 py-3 rounded-xl glass-subtle">
+          <span className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">IBAN</span>
+          <span className="text-sm font-mono font-semibold break-all">
+            {process.env.NEXT_PUBLIC_IBAN_NUMBER || 'TR00 0000 0000 0000 0000 0000 00'}
+          </span>
         </div>
-        <Button
-          onClick={handleNotify}
-          disabled={loading}
-          className="w-full"
-          size="lg"
-        >
-          {loading ? 'Bildiriliyor...' : 'Ödemeyi Bildirdim'}
-        </Button>
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="rounded-xl px-4 py-3 mb-6 text-xs leading-relaxed"
+        style={{ background: 'rgba(250, 130, 49, 0.12)', color: '#fa8231' }}>
+        Transfer açıklamasına <strong>iFox Social</strong> yazmayı unutmayın. Ödeme sonrası aşağıdaki butona tıklayın.
+      </div>
+
+      <button onClick={handleNotify} disabled={loading}
+        className="btn-apple w-full h-12 text-sm font-medium cursor-pointer">
+        {loading ? 'Bildiriliyor...' : '💳 Ödemeyi Bildirdim'}
+      </button>
+    </div>
   )
 }

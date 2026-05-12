@@ -2,27 +2,19 @@
 
 import { useEffect, useState } from 'react'
 import type { ReactElement } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
 
 type SocialAccount = { id: string; handle: string; status: string; platform: string }
 type Employee = { id: string; name: string; email: string; status: string }
 
 const STATUS_BADGES: Record<string, ReactElement> = {
-  PENDING: <Badge variant="secondary">Bekleniyor</Badge>,
-  CONNECTED: <Badge className="bg-green-100 text-green-800">Bağlandı</Badge>,
-  DISCONNECTED: <Badge variant="destructive">Bağlantı Kesildi</Badge>,
+  PENDING: <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-500">Bekleniyor</span>,
+  CONNECTED: <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-green-500/15 text-green-500">Bağlandı</span>,
+  DISCONNECTED: <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-red-500/15 text-red-500">Bağlantı Kesildi</span>,
 }
 
 export default function AyarlarPage() {
@@ -35,168 +27,143 @@ export default function AyarlarPage() {
   const [addingEmp, setAddingEmp] = useState(false)
   const [empError, setEmpError] = useState('')
 
-  async function loadAccounts() {
-    const res = await fetch('/api/settings/instagram')
-    const data = await res.json()
-    setAccounts(data.accounts || [])
-  }
-
-  async function loadEmployees() {
-    const res = await fetch('/api/settings/team')
-    const data = await res.json()
-    setEmployees(data.employees || [])
-  }
-
+  async function loadAccounts() { const res = await fetch('/api/settings/instagram'); const d = await res.json(); setAccounts(d.accounts || []) }
+  async function loadEmployees() { const res = await fetch('/api/settings/team'); const d = await res.json(); setEmployees(d.employees || []) }
   useEffect(() => { loadAccounts(); loadEmployees() }, [])
 
   async function connectInstagram() {
     if (!igHandle.trim()) return
     setConnecting(true)
-    await fetch('/api/settings/instagram', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ handle: igHandle }),
-    })
-    setIgHandle('')
-    setConnecting(false)
-    loadAccounts()
+    await fetch('/api/settings/instagram', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ handle: igHandle }) })
+    setIgHandle(''); setConnecting(false); loadAccounts()
   }
 
   async function addEmployee() {
-    setEmpError('')
-    setAddingEmp(true)
-    const res = await fetch('/api/settings/team', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(empForm),
-    })
-    if (res.ok) {
-      setAddEmpOpen(false)
-      setEmpForm({ name: '', email: '', password: '' })
-      loadEmployees()
-    } else {
-      const d = await res.json()
-      setEmpError(d.error || 'Hata')
-    }
+    setEmpError(''); setAddingEmp(true)
+    const res = await fetch('/api/settings/team', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(empForm) })
+    if (res.ok) { setAddEmpOpen(false); setEmpForm({ name: '', email: '', password: '' }); loadEmployees() }
+    else { const d = await res.json(); setEmpError(d.error || 'Hata') }
     setAddingEmp(false)
   }
 
   async function removeEmployee(id: string) {
     if (!confirm('Bu çalışan silinsin mi?')) return
-    await fetch(`/api/settings/team/${id}`, { method: 'DELETE' })
-    loadEmployees()
+    await fetch(`/api/settings/team/${id}`, { method: 'DELETE' }); loadEmployees()
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">Ayarlar</h1>
+    <div className="space-y-6 max-w-2xl">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Ayarlar</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">Hesap ve entegrasyon ayarları</p>
+      </div>
 
       {/* Instagram */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Instagram Bağlantısı</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-2">
-            <Input
-              value={igHandle}
-              onChange={(e) => setIgHandle(e.target.value)}
-              placeholder="@instagram_kullanici_adi"
-            />
-            <Button onClick={connectInstagram} disabled={connecting || !igHandle.trim()}>
-              {connecting ? 'Bağlanıyor...' : 'Bağla'}
-            </Button>
+      <div className="glass rounded-2xl p-5">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xl"
+            style={{ background: 'linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)' }}>
+            📸
           </div>
-          {accounts.length > 0 && (
-            <div className="space-y-2">
-              {accounts.map((a) => (
-                <div key={a.id} className="flex items-center justify-between p-2 border rounded-lg">
-                  <span className="font-medium text-sm">@{a.handle}</span>
-                  {STATUS_BADGES[a.status] || <Badge>{a.status}</Badge>}
-                </div>
-              ))}
-            </div>
-          )}
-          {accounts.length === 0 && (
-            <p className="text-sm text-muted-foreground">Henüz Instagram hesabı bağlanmadı.</p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Separator />
+          <div>
+            <h2 className="text-sm font-semibold">Instagram Bağlantısı</h2>
+            <p className="text-xs text-muted-foreground">ManyChat üzerinden hesap bağla</p>
+          </div>
+        </div>
+        <div className="flex gap-2 mb-4">
+          <Input value={igHandle} onChange={(e) => setIgHandle(e.target.value)}
+            placeholder="@instagram_kullanici_adi"
+            className="h-10 rounded-xl bg-black/4 dark:bg-white/4 border-border flex-1" />
+          <button onClick={connectInstagram} disabled={connecting || !igHandle.trim()}
+            className="btn-apple px-5 h-10 text-sm font-medium cursor-pointer disabled:opacity-40 shrink-0">
+            {connecting ? '...' : 'Bağla'}
+          </button>
+        </div>
+        {accounts.length === 0 ? (
+          <p className="text-xs text-muted-foreground">Henüz Instagram hesabı bağlanmadı.</p>
+        ) : (
+          <div className="space-y-2">
+            {accounts.map((a) => (
+              <div key={a.id} className="flex items-center justify-between px-4 py-2.5 rounded-xl glass-subtle">
+                <span className="text-sm font-medium">@{a.handle}</span>
+                {STATUS_BADGES[a.status] || <span className="text-xs">{a.status}</span>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Team */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Ekip Yönetimi</CardTitle>
-          <Button size="sm" onClick={() => setAddEmpOpen(true)}>Çalışan Ekle</Button>
-        </CardHeader>
-        <CardContent>
-          {employees.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Henüz çalışan eklenmedi.</p>
-          ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-muted-foreground">
-                  <th className="text-left py-2">Ad</th>
-                  <th className="text-left py-2">E-posta</th>
-                  <th className="text-left py-2">Durum</th>
-                  <th className="text-left py-2"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {employees.map((e) => (
-                  <tr key={e.id} className="border-b">
-                    <td className="py-2">{e.name}</td>
-                    <td className="py-2 text-muted-foreground">{e.email}</td>
-                    <td className="py-2">
-                      <Badge variant={e.status === 'ACTIVE' ? 'default' : 'secondary'}>
-                        {e.status === 'ACTIVE' ? 'Aktif' : 'Pasif'}
-                      </Badge>
-                    </td>
-                    <td className="py-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-destructive"
-                        onClick={() => removeEmployee(e.id)}
-                      >
-                        Sil
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </CardContent>
-      </Card>
+      <div className="glass rounded-2xl p-5">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl stat-cyan flex items-center justify-center text-xl">👥</div>
+            <div>
+              <h2 className="text-sm font-semibold">Ekip Yönetimi</h2>
+              <p className="text-xs text-muted-foreground">{employees.length} çalışan</p>
+            </div>
+          </div>
+          <button onClick={() => setAddEmpOpen(true)}
+            className="text-xs font-medium px-4 h-8 rounded-full glass-subtle hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer">
+            + Çalışan Ekle
+          </button>
+        </div>
+        {employees.length === 0 ? (
+          <p className="text-xs text-muted-foreground text-center py-4">Henüz çalışan eklenmedi.</p>
+        ) : (
+          <div className="space-y-2">
+            {employees.map((e) => (
+              <div key={e.id} className="flex items-center justify-between px-4 py-3 rounded-xl glass-subtle">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl stat-violet flex items-center justify-center text-white text-xs font-bold">
+                    {e.name[0]}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{e.name}</p>
+                    <p className="text-xs text-muted-foreground">{e.email}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${e.status === 'ACTIVE' ? 'bg-green-500/15 text-green-500' : 'bg-muted text-muted-foreground'}`}>
+                    {e.status === 'ACTIVE' ? 'Aktif' : 'Pasif'}
+                  </span>
+                  <button onClick={() => removeEmployee(e.id)}
+                    className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer">Sil</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <Dialog open={addEmpOpen} onOpenChange={setAddEmpOpen}>
-        <DialogContent>
+        <DialogContent className="glass border-border/50">
           <DialogHeader>
             <DialogTitle>Çalışan Ekle</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <Label>Ad Soyad</Label>
-              <Input value={empForm.name} onChange={(e) => setEmpForm({ ...empForm, name: e.target.value })} />
-            </div>
-            <div className="space-y-1">
-              <Label>E-posta</Label>
-              <Input type="email" value={empForm.email} onChange={(e) => setEmpForm({ ...empForm, email: e.target.value })} />
-            </div>
-            <div className="space-y-1">
-              <Label>Şifre</Label>
-              <Input type="password" value={empForm.password} onChange={(e) => setEmpForm({ ...empForm, password: e.target.value })} />
-            </div>
-            {empError && <p className="text-sm text-destructive">{empError}</p>}
+          <div className="space-y-3 py-2">
+            {[
+              { label: 'Ad Soyad', key: 'name', type: 'text', placeholder: 'Ahmet Yılmaz' },
+              { label: 'E-posta', key: 'email', type: 'email', placeholder: 'ahmet@sirket.com' },
+              { label: 'Şifre', key: 'password', type: 'password', placeholder: '••••••••' },
+            ].map(({ label, key, type, placeholder }) => (
+              <div key={key} className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">{label}</Label>
+                <Input type={type} placeholder={placeholder}
+                  value={empForm[key as keyof typeof empForm]}
+                  onChange={(e) => setEmpForm({ ...empForm, [key]: e.target.value })}
+                  className="h-10 rounded-xl" />
+              </div>
+            ))}
+            {empError && <p className="text-xs text-destructive">{empError}</p>}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAddEmpOpen(false)}>İptal</Button>
-            <Button onClick={addEmployee} disabled={addingEmp}>
+            <button onClick={() => setAddEmpOpen(false)}
+              className="px-4 h-9 text-sm rounded-xl border border-border hover:bg-muted transition-colors cursor-pointer">İptal</button>
+            <button onClick={addEmployee} disabled={addingEmp}
+              className="btn-apple px-5 h-9 text-sm font-medium cursor-pointer disabled:opacity-40">
               {addingEmp ? 'Ekleniyor...' : 'Ekle'}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

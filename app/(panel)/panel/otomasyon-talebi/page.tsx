@@ -1,22 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
 import { formatDate } from '@/lib/utils'
 
-type AutoReq = {
-  id: string
-  description: string
-  isExtra: boolean
-  status: string
-  createdAt: string
-}
+type AutoReq = { id: string; description: string; isExtra: boolean; status: string; createdAt: string }
 
-const STATUS = { PENDING: 'Bekliyor', IN_PROGRESS: 'Devam Ediyor', DONE: 'Tamamlandı', REJECTED: 'Reddedildi' }
+const STATUS_LABELS: Record<string, string> = { PENDING: 'Bekliyor', IN_PROGRESS: 'Devam Ediyor', DONE: 'Tamamlandı', REJECTED: 'Reddedildi' }
+const STATUS_COLORS: Record<string, string> = {
+  PENDING: 'bg-amber-500/15 text-amber-500',
+  IN_PROGRESS: 'bg-blue-500/15 text-blue-500',
+  DONE: 'bg-green-500/15 text-green-500',
+  REJECTED: 'bg-red-500/15 text-red-500',
+}
 const FREE_LIMIT = 2
 
 export default function OtomasyonTalebiPage() {
@@ -44,111 +39,93 @@ export default function OtomasyonTalebiPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ description }),
     })
-    if (res.ok) {
-      setDescription('')
-      load()
-    } else {
-      const d = await res.json()
-      setError(d.error || 'Hata oluştu')
-    }
+    if (res.ok) { setDescription(''); load() }
+    else { const d = await res.json(); setError(d.error || 'Hata oluştu') }
     setSubmitting(false)
   }
 
   const usedFree = requests.filter((r) => !r.isExtra).length
   const isExtraNext = usedFree >= FREE_LIMIT
-
-  const statusBadge = (s: string) => {
-    const colors: Record<string, string> = {
-      PENDING: 'bg-amber-100 text-amber-800',
-      IN_PROGRESS: 'bg-blue-100 text-blue-800',
-      DONE: 'bg-green-100 text-green-800',
-      REJECTED: 'bg-red-100 text-red-800',
-    }
-    return <Badge className={colors[s]}>{STATUS[s as keyof typeof STATUS] || s}</Badge>
-  }
+  const pct = Math.min((usedFree / FREE_LIMIT) * 100, 100)
 
   return (
-    <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">Otomasyon Talebi</h1>
+    <div className="space-y-6 max-w-2xl">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Otomasyon Talebi</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">N8N iş akışı talepleri</p>
+      </div>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-base flex items-center justify-between">
-            <span>Kullanım</span>
-            <span className="text-sm font-normal text-muted-foreground">
-              {usedFree}/{FREE_LIMIT} ücretsiz talep
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="w-full bg-muted rounded-full h-2">
-            <div
-              className="bg-primary h-2 rounded-full transition-all"
-              style={{ width: `${Math.min((usedFree / FREE_LIMIT) * 100, 100)}%` }}
-            />
+      {/* Usage */}
+      <div className="glass rounded-2xl p-5">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm font-semibold">Ücretsiz Kullanım</span>
+          <span className="text-xs font-medium px-2.5 py-1 rounded-full glass-subtle">
+            {usedFree}/{FREE_LIMIT} kullanıldı
+          </span>
+        </div>
+        <div className="h-2 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
+          <div className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${pct}%`, background: isExtraNext ? 'linear-gradient(90deg,#f5576c,#f093fb)' : 'linear-gradient(90deg,#4facfe,#00f2fe)' }} />
+        </div>
+        {isExtraNext && (
+          <p className="text-xs text-amber-500 mt-3">
+            ⚠️ Ücretsiz hakkınız doldu. Sonraki talep ücretli olacak — fiyat için sizinle iletişime geçeceğiz.
+          </p>
+        )}
+      </div>
+
+      {/* New request */}
+      <div className="glass rounded-2xl p-5">
+        <h2 className="text-sm font-semibold mb-4">Yeni Talep</h2>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Hangi otomasyonu istediğinizi detaylıca açıklayın..."
+          rows={4}
+          className="w-full text-sm px-4 py-3 rounded-xl border border-border bg-black/3 dark:bg-white/4 resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+        />
+        {error && <p className="text-xs text-destructive mt-2">{error}</p>}
+        {isExtraNext && (
+          <p className="text-xs text-muted-foreground mt-2">
+            Bu talep <strong>ücretli</strong> olarak işlenecektir.
+          </p>
+        )}
+        <button onClick={submit} disabled={submitting || !description.trim()}
+          className="btn-apple mt-4 px-6 h-10 text-sm font-medium cursor-pointer disabled:opacity-40">
+          {submitting ? 'Gönderiliyor...' : '🚀 Talep Gönder'}
+        </button>
+      </div>
+
+      {/* History */}
+      <div className="glass rounded-2xl p-5">
+        <h2 className="text-sm font-semibold mb-4">Talep Geçmişi</h2>
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="w-6 h-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
           </div>
-          {isExtraNext && (
-            <p className="text-sm text-amber-600 mt-2">
-              Ücretsiz talep hakkınızı kullandınız. Bir sonraki talep ücretli olacak.
-              Fiyat için sizinle iletişime geçeceğiz.
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-base">Yeni Talep</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Otomasyon Açıklaması</Label>
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Hangi otomasyonu istediğinizi detaylıca açıklayın..."
-              rows={4}
-            />
-          </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          {isExtraNext && (
-            <p className="text-xs text-muted-foreground">
-              Bu talep <strong>ücretli</strong> olarak işlenecek. Fiyat için sizinle iletişime geçeceğiz.
-            </p>
-          )}
-          <Button onClick={submit} disabled={submitting || !description.trim()}>
-            {submitting ? 'Gönderiliyor...' : 'Talep Gönder'}
-          </Button>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Talep Geçmişi</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <p className="text-sm text-muted-foreground">Yükleniyor...</p>
-          ) : requests.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Henüz talep yok.</p>
-          ) : (
-            <div className="space-y-3">
-              {requests.map((r) => (
-                <div key={r.id} className="border rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      {statusBadge(r.status)}
-                      {r.isExtra && <Badge variant="outline" className="text-xs">Ücretli</Badge>}
-                    </div>
-                    <span className="text-xs text-muted-foreground">{formatDate(r.createdAt)}</span>
+        ) : requests.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-6">Henüz talep yok.</p>
+        ) : (
+          <div className="space-y-3">
+            {requests.map((r) => (
+              <div key={r.id} className="glass-subtle rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${STATUS_COLORS[r.status]}`}>
+                      {STATUS_LABELS[r.status as keyof typeof STATUS_LABELS] || r.status}
+                    </span>
+                    {r.isExtra && (
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full border border-border text-muted-foreground">Ücretli</span>
+                    )}
                   </div>
-                  <p className="text-sm">{r.description}</p>
+                  <span className="text-xs text-muted-foreground">{formatDate(r.createdAt)}</span>
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                <p className="text-sm text-muted-foreground leading-relaxed">{r.description}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

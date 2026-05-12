@@ -3,64 +3,94 @@
 import { useActionState } from 'react'
 import Link from 'next/link'
 import { register, type FormState } from '@/app/actions/auth'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+
+const EMOJIS_A = ['📱','💬','❤️','🔥','👥','📊','🎯','✨','🌟','💫']
+const EMOJIS_B = ['📸','🎬','💎','🚀','⭐','🎭','💌','🦊','🌈','🏆']
+const EMOJIS_C = ['🎨','💡','🎵','🌺','💝','🎊','✅','🔮','🦋','🎪']
 
 export default function KayitPage() {
   const [state, action, pending] = useActionState<FormState, FormData>(register, undefined)
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Hesap Oluştur</CardTitle>
-        <CardDescription>iFox Social Media Control&apos;e katılın</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div className="w-full max-w-5xl flex rounded-3xl overflow-hidden shadow-2xl" style={{ minHeight: 560 }}>
+      {/* Left — scrolling emojis */}
+      <div className="hidden lg:flex w-72 relative overflow-hidden shrink-0"
+        style={{ background: 'linear-gradient(135deg, #0f0f1a 0%, #1a0f2e 50%, #0f1a2e 100%)' }}>
+        <div className="absolute inset-0 flex gap-6 px-6 py-4 select-none pointer-events-none opacity-60">
+          <div className="flex flex-col gap-6 animate-scroll-up">
+            {[...EMOJIS_A, ...EMOJIS_A].map((e, i) => (
+              <span key={i} className="text-4xl leading-none">{e}</span>
+            ))}
+          </div>
+          <div className="flex flex-col gap-6 animate-scroll-down mt-8">
+            {[...EMOJIS_B, ...EMOJIS_B].map((e, i) => (
+              <span key={i} className="text-4xl leading-none">{e}</span>
+            ))}
+          </div>
+          <div className="flex flex-col gap-6 animate-scroll-up-slow mt-16">
+            {[...EMOJIS_C, ...EMOJIS_C].map((e, i) => (
+              <span key={i} className="text-4xl leading-none">{e}</span>
+            ))}
+          </div>
+        </div>
+        {/* overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/60" />
+        <div className="relative z-10 flex flex-col justify-end p-8">
+          <h2 className="text-2xl font-bold text-white mb-2">iFox Social</h2>
+          <p className="text-white/60 text-sm leading-relaxed">
+            Instagram mesajlarını merkezi bir panelden yönet, lead&apos;lerini takip et.
+          </p>
+        </div>
+      </div>
+
+      {/* Right — form */}
+      <div className="flex-1 glass flex flex-col justify-center p-8 lg:p-10">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold mb-1">Hesap Oluştur</h1>
+          <p className="text-muted-foreground text-sm">Birkaç adımda başlayın</p>
+        </div>
+
         <form action={action} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Ad Soyad</Label>
-            <Input id="name" name="name" placeholder="Ahmet Yılmaz" required />
-            {state?.errors?.name && (
-              <p className="text-sm text-destructive">{state.errors.name[0]}</p>
-            )}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="name" className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Ad Soyad</Label>
+              <Input id="name" name="name" placeholder="Ahmet Yılmaz" required
+                className="h-11 rounded-xl bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10" />
+              {state?.errors?.name && <p className="text-xs text-destructive">{state.errors.name[0]}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="companyName" className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Marka Adı</Label>
+              <Input id="companyName" name="companyName" placeholder="Şirket" required
+                className="h-11 rounded-xl bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10" />
+              {state?.errors?.companyName && <p className="text-xs text-destructive">{state.errors.companyName[0]}</p>}
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="companyName">Şirket / Marka Adı</Label>
-            <Input id="companyName" name="companyName" placeholder="Şirket Adı" required />
-            {state?.errors?.companyName && (
-              <p className="text-sm text-destructive">{state.errors.companyName[0]}</p>
-            )}
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-xs font-medium uppercase tracking-wide text-muted-foreground">E-posta</Label>
+            <Input id="email" name="email" type="email" placeholder="ornek@sirket.com" required
+              className="h-11 rounded-xl bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10" />
+            {state?.errors?.email && <p className="text-xs text-destructive">{state.errors.email[0]}</p>}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">E-posta</Label>
-            <Input id="email" name="email" type="email" placeholder="ornek@sirket.com" required />
-            {state?.errors?.email && (
-              <p className="text-sm text-destructive">{state.errors.email[0]}</p>
-            )}
+          <div className="space-y-1.5">
+            <Label htmlFor="password" className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Şifre</Label>
+            <Input id="password" name="password" type="password" placeholder="En az 8 karakter" required
+              className="h-11 rounded-xl bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10" />
+            {state?.errors?.password && <p className="text-xs text-destructive">{state.errors.password[0]}</p>}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Şifre</Label>
-            <Input id="password" name="password" type="password" placeholder="En az 8 karakter" required />
-            {state?.errors?.password && (
-              <p className="text-sm text-destructive">{state.errors.password[0]}</p>
-            )}
-          </div>
-          {state?.message && (
-            <p className="text-sm text-destructive">{state.message}</p>
-          )}
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? 'Kayıt oluşturuluyor...' : 'Kayıt Ol'}
-          </Button>
+          {state?.message && <p className="text-sm text-destructive">{state.message}</p>}
+          <button type="submit" disabled={pending}
+            className="btn-apple w-full h-11 mt-2 text-sm font-medium cursor-pointer">
+            {pending ? 'Oluşturuluyor...' : 'Üye Ol →'}
+          </button>
         </form>
-        <p className="text-center text-sm text-muted-foreground mt-4">
+
+        <p className="text-center text-sm text-muted-foreground mt-6">
           Zaten hesabınız var mı?{' '}
-          <Link href="/giris" className="text-primary hover:underline font-medium">
-            Giriş Yap
-          </Link>
+          <Link href="/giris" className="text-primary font-medium hover:underline">Giriş Yap</Link>
         </p>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

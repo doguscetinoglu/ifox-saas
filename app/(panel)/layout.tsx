@@ -1,57 +1,85 @@
 import Link from 'next/link'
 import { verifyActiveSession } from '@/lib/dal'
 import { logout } from '@/app/actions/auth'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
+import { SidebarLink } from '@/components/panel/sidebar-link'
 import NotificationBell from '@/components/panel/notification-bell'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const session = await verifyActiveSession()
   const isOwner = session.role === 'OWNER'
 
   const navItems = [
-    ...(isOwner ? [{ href: '/panel', label: '📊 Dashboard' }] : []),
-    { href: '/panel/mesajlar', label: '💬 Mesajlar' },
+    ...(isOwner ? [{ href: '/panel', icon: '▦', label: 'Dashboard' }] : []),
+    { href: '/panel/mesajlar', icon: '💬', label: 'Mesajlar' },
     ...(isOwner ? [
-      { href: '/panel/leadler', label: '🎯 Leadler' },
-      { href: '/panel/raporlar', label: '📈 Raporlar' },
-      { href: '/panel/otomasyon-talebi', label: '🤖 Otomasyon' },
-      { href: '/panel/ayarlar', label: '⚙️ Ayarlar' },
+      { href: '/panel/leadler', icon: '🎯', label: 'Leadler' },
+      { href: '/panel/raporlar', icon: '📈', label: 'Raporlar' },
+      { href: '/panel/otomasyon-talebi', icon: '🤖', label: 'Otomasyon' },
+      { href: '/panel/ayarlar', icon: '⚙️', label: 'Ayarlar' },
     ] : []),
   ]
 
+  const initials = session.name?.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase() || 'U'
+
   return (
-    <div className="min-h-screen flex">
-      <aside className="w-56 border-r bg-muted/30 flex flex-col p-4 gap-1 shrink-0">
-        <div className="mb-4">
-          <span className="font-bold text-primary">iFox</span>
-          <span className="text-muted-foreground"> Social</span>
+    <div className="min-h-screen flex bg-background">
+      {/* Sidebar */}
+      <aside className="w-60 shrink-0 flex flex-col sidebar-glass fixed top-0 left-0 h-full z-30">
+        {/* Logo */}
+        <div className="px-5 py-5 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center text-lg shrink-0"
+            style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+            🦊
+          </div>
+          <div className="leading-none">
+            <span className="font-bold text-sm gradient-text">iFox</span>
+            <span className="text-xs text-muted-foreground ml-1">Social</span>
+          </div>
         </div>
-        <Separator className="mb-3" />
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="text-sm px-3 py-2 rounded-md hover:bg-muted transition-colors"
-          >
-            {item.label}
-          </Link>
-        ))}
-        <div className="mt-auto">
-          <Separator className="mb-3" />
-          <div className="text-xs text-muted-foreground px-3 mb-2 truncate">{session.email}</div>
+
+        <div className="h-px bg-border mx-4" />
+
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-4 space-y-0.5">
+          {navItems.map((item) => (
+            <SidebarLink key={item.href} href={item.href} icon={item.icon} label={item.label} />
+          ))}
+        </nav>
+
+        <div className="h-px bg-border mx-4" />
+
+        {/* User */}
+        <div className="px-3 py-4">
+          <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl glass-subtle mb-2">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white shrink-0"
+              style={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
+              {initials}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium truncate">{session.name}</p>
+              <p className="text-xs text-muted-foreground truncate">{session.email}</p>
+            </div>
+          </div>
           <form action={logout}>
-            <Button variant="ghost" size="sm" type="submit" className="w-full justify-start">
-              Çıkış Yap
-            </Button>
+            <button type="submit"
+              className="w-full text-xs text-muted-foreground hover:text-destructive transition-colors px-3 py-2 rounded-xl hover:bg-destructive/8 text-left cursor-pointer">
+              → Çıkış Yap
+            </button>
           </form>
         </div>
       </aside>
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-14 border-b flex items-center justify-end px-6 gap-3 shrink-0">
-          <NotificationBell />
+
+      {/* Main */}
+      <div className="flex-1 flex flex-col ml-60">
+        <header className="h-14 flex items-center justify-between px-6 sticky top-0 z-20 sidebar-glass border-b border-border/50">
+          <div />
+          <div className="flex items-center gap-3">
+            <NotificationBell />
+            <ThemeToggle />
+          </div>
         </header>
-        <main className="flex-1 p-6 overflow-auto">{children}</main>
+        <main className="flex-1 p-6 page-enter">{children}</main>
       </div>
     </div>
   )
