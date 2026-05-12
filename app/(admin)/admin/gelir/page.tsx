@@ -101,7 +101,8 @@ export default function GelirPage() {
           <h2 className="text-sm font-semibold flex items-center gap-2"><span>💳</span> Ödeme Geçmişi</h2>
           <span className="text-xs text-muted-foreground">{data.payments.length} kayıt</span>
         </div>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[480px]">
           <thead>
             <tr className="border-b border-border/60">
               {['Müşteri', 'Tutar', 'Tarih', 'Durum'].map((h) => (
@@ -146,6 +147,7 @@ export default function GelirPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )

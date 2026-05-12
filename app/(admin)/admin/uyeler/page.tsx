@@ -21,7 +21,8 @@ export default async function UyelerPage() {
       </div>
 
       <div className="glass rounded-2xl overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[640px]">
           <thead>
             <tr className="border-b border-border/60">
               {['Şirket', 'E-posta', 'Paket', 'Mesaj', 'Lead', 'Durum', 'Kayıt'].map((h) => (
@@ -53,6 +54,7 @@ export default async function UyelerPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )

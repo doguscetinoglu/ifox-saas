@@ -54,7 +54,8 @@ export default function LeadlerPage() {
         </div>
       ) : (
         <div className="glass rounded-2xl overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[560px]">
             <thead>
               <tr className="border-b border-border/60">
                 {['İsim', 'İletişim', 'Notlar', 'Tarih', ''].map((h) => (
@@ -101,6 +102,7 @@ export default function LeadlerPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

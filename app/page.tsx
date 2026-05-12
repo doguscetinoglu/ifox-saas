@@ -209,7 +209,7 @@ export default function LandingPage() {
           </FadeIn>
 
           <FadeIn delay={80}>
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-[1.1]">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-[1.15]">
               <span className="text-white">Instagram</span>
               <br />
               <span className="text-white">Mesajlarını</span>
@@ -284,7 +284,7 @@ export default function LandingPage() {
             <div className="inline-flex items-center gap-2 glass-subtle px-4 py-1.5 rounded-full text-xs text-muted-foreground mb-4">
               ✨ Özellikler
             </div>
-            <h2 className="text-4xl font-bold tracking-tight mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
               Her Şey <span className="gradient-text">Tek Panelde</span>
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto text-base">
@@ -319,7 +319,7 @@ export default function LandingPage() {
             <div className="inline-flex items-center gap-2 glass-subtle px-4 py-1.5 rounded-full text-xs text-muted-foreground mb-4">
               🚀 Nasıl Çalışır?
             </div>
-            <h2 className="text-4xl font-bold tracking-tight mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
               3 Adımda <span className="gradient-text">Başla</span>
             </h2>
             <p className="text-muted-foreground">Kurulum dakikalar içinde tamamlanır. Hemen kullanmaya başlayın.</p>
@@ -362,7 +362,7 @@ export default function LandingPage() {
             <div className="inline-flex items-center gap-2 glass-subtle px-4 py-1.5 rounded-full text-xs text-muted-foreground mb-4">
               👁️ Ürün Önizlemesi
             </div>
-            <h2 className="text-4xl font-bold tracking-tight mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
               Tam Kontrol <span className="gradient-text">Tek Ekranda</span>
             </h2>
             <p className="text-muted-foreground">İşte panelin gerçek görünümü. Sade, hızlı, güçlü.</p>
@@ -385,7 +385,8 @@ export default function LandingPage() {
                 </div>
 
                 {/* Fake UI */}
-                <div className="flex" style={{ minHeight: 400 }}>
+                <div className="overflow-x-auto">
+                <div className="flex" style={{ minHeight: 400, minWidth: 600 }}>
                   {/* Sidebar */}
                   <div className="w-44 shrink-0 border-r border-border/50 p-3 space-y-1">
                     <div className="px-2 py-2 mb-3">
@@ -488,6 +489,7 @@ export default function LandingPage() {
                     </div>
                   </div>
                 </div>
+                </div>
               </div>
             </div>
           </FadeIn>
@@ -502,7 +504,7 @@ export default function LandingPage() {
             <div className="inline-flex items-center gap-2 glass-subtle px-4 py-1.5 rounded-full text-xs text-muted-foreground mb-4">
               💰 Fiyatlandırma
             </div>
-            <h2 className="text-4xl font-bold tracking-tight mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
               Basit, <span className="gradient-text">Şeffaf</span>
             </h2>
             <p className="text-muted-foreground">Sürpriz yok. Gizli ücret yok.</p>
@@ -563,7 +565,7 @@ export default function LandingPage() {
         <div className="max-w-3xl mx-auto text-center relative z-10">
           <FadeIn>
             <div className="text-5xl mb-6 animate-float inline-block">🦊</div>
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 text-white leading-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-6 text-white leading-tight">
               Instagram DM&apos;lerini{' '}
               <span className="shimmer-text">Kaçırmayı Bırak</span>
             </h2>

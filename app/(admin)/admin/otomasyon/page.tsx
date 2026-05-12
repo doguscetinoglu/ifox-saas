@@ -47,7 +47,8 @@ export default function OtomasyonPage() {
         </div>
       ) : (
         <div className="glass rounded-2xl overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[640px]">
             <thead>
               <tr className="border-b border-border/60">
                 {['Şirket', 'Açıklama', 'Tip', 'Tarih', 'Durum', 'Güncelle'].map((h) => (
@@ -88,6 +89,7 @@ export default function OtomasyonPage() {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

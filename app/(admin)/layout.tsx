@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { verifyAdminSession } from '@/lib/dal'
 import { logout } from '@/app/actions/auth'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { AdminMobileMenu } from '@/components/admin/mobile-menu'
 
 const navItems = [
   { href: '/admin', icon: '▦', label: 'Dashboard' },
@@ -16,7 +17,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-screen flex bg-background">
-      <aside className="w-60 shrink-0 flex flex-col sidebar-glass fixed top-0 left-0 h-full z-30">
+      {/* Sidebar — desktop only */}
+      <aside className="w-60 shrink-0 hidden md:flex flex-col sidebar-glass fixed top-0 left-0 h-full z-30">
         <div className="px-5 py-5 flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center text-lg shrink-0"
             style={{ background: 'linear-gradient(135deg, #f5576c 0%, #f093fb 100%)' }}>
@@ -52,12 +54,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col ml-60">
-        <header className="h-14 flex items-center justify-between px-6 sticky top-0 z-20 sidebar-glass border-b border-border/50">
-          <span className="text-xs font-medium px-3 py-1 rounded-full bg-red-500/10 text-red-500">Admin Panel</span>
+      <div className="flex-1 flex flex-col md:ml-60">
+        <header className="h-14 flex items-center justify-between px-4 md:px-6 sticky top-0 z-20 sidebar-glass border-b border-border/50">
+          <AdminMobileMenu navItems={navItems} />
+          <span className="hidden md:inline text-xs font-medium px-3 py-1 rounded-full bg-red-500/10 text-red-500">Admin Panel</span>
           <ThemeToggle />
         </header>
-        <main className="flex-1 p-6 page-enter">{children}</main>
+        <main className="flex-1 p-4 md:p-6 page-enter">{children}</main>
       </div>
     </div>
   )

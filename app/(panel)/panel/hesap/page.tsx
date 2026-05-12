@@ -54,7 +54,7 @@ export default function HesapPage() {
         <p className="text-sm text-muted-foreground mt-0.5">Plan ve ödeme bilgileriniz</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* Plan card */}
         <div className="lg:col-span-1 glow-violet rounded-2xl">
           <Card3D className="stat-violet rounded-2xl p-6 text-white h-full">
@@ -168,7 +168,8 @@ export default function HesapPage() {
           <h2 className="text-sm font-semibold flex items-center gap-2"><span>📋</span> Ödeme Geçmişi</h2>
           <span className="text-xs text-muted-foreground">{data.payments.length} işlem</span>
         </div>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[400px]">
           <thead>
             <tr className="border-b border-border/60">
               {['Tarih', 'Tutar', 'Durum'].map((h) => (
@@ -202,6 +203,7 @@ export default function HesapPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )
