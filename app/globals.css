@@ -325,3 +325,50 @@ input:focus-visible, textarea:focus-visible {
   box-shadow: 0 0 0 3px rgba(99,102,241,0.3);
   border-color: #6366f1 !important;
 }
+
+/* Smooth scroll */
+html { scroll-behavior: smooth; }
+
+/* ══════════════════════════════════════════════════════
+   LANDING PAGE EXTRAS
+══════════════════════════════════════════════════════ */
+
+/* Orb blob */
+@keyframes blob {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33%      { transform: translate(24px,-18px) scale(1.08); }
+  66%      { transform: translate(-12px,18px) scale(0.95); }
+}
+.animate-blob       { animation: blob 10s ease-in-out infinite; }
+.animate-blob-delay { animation: blob 12s ease-in-out infinite 3s; }
+
+/* Shimmer for badges */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.shimmer-text {
+  background: linear-gradient(90deg, #7c7cf8 0%, #e0e0ff 40%, #7c7cf8 60%, #a78bfa 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+
+/* Typewriter cursor blink */
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+.cursor { animation: blink 1s step-end infinite; }
+
+/* Counter tick */
+@keyframes ticker-up {
+  0%   { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-24px); opacity: 0; }
+}
+
+/* Gradient animated border glow for hero cards */
+@keyframes border-glow {
+  0%,100% { opacity: 0.5; }
+  50%     { opacity: 1; }
+}
+.border-glow { animation: border-glow 3s ease-in-out infinite; }
