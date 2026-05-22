@@ -24,7 +24,13 @@ export async function POST(req: Request) {
     const appUrl = process.env.NEXTAUTH_URL || `https://${process.env.VERCEL_URL}` || 'http://localhost:3000'
     const resetUrl = `${appUrl}/sifre-sifirla?token=${token}`
 
-    await sendPasswordResetEmail(user.email, user.name, resetUrl).catch(() => {})
+    const emailResult = await sendPasswordResetEmail(user.email, user.name, resetUrl).catch((err) => {
+      console.error('[forgot-password] email error:', err)
+      return null
+    })
+    if (emailResult && 'error' in emailResult && emailResult.error) {
+      console.error('[forgot-password] resend error:', JSON.stringify(emailResult.error))
+    }
   }
 
   return NextResponse.json({ ok: true })
