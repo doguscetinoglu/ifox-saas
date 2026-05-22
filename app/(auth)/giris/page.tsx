@@ -64,7 +64,10 @@ export default function GirisPage() {
             {state?.errors?.email && <p className="text-xs text-destructive">{state.errors.email[0]}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="password" className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Şifre</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password" className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Şifre</Label>
+              <Link href="/sifremi-unuttum" className="text-xs text-primary hover:underline">Şifremi Unuttum</Link>
+            </div>
             <Input id="password" name="password" type="password" placeholder="••••••••" required
               className="h-11 rounded-xl bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10" />
             {state?.errors?.password && <p className="text-xs text-destructive">{state.errors.password[0]}</p>}

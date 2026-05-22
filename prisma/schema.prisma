@@ -60,14 +60,25 @@ model User {
   customerId String?
   customer   Customer? @relation("EmployeeCustomer", fields: [customerId], references: [id])
 
-  ownedCustomer    Customer?        @relation("OwnerCustomer")
-  messageReplies   MessageReply[]
-  notifications    Notification[]
-  leadsCreated     Lead[]           @relation("LeadCreatedBy")
-  paymentsReviewed PaymentRequest[] @relation("PaymentReviewedBy")
+  ownedCustomer        Customer?             @relation("OwnerCustomer")
+  messageReplies       MessageReply[]
+  notifications        Notification[]
+  leadsCreated         Lead[]                @relation("LeadCreatedBy")
+  paymentsReviewed     PaymentRequest[]      @relation("PaymentReviewedBy")
+  passwordResetTokens  PasswordResetToken[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
 }
 
 model Customer {
