@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { formatDate } from '@/lib/utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
@@ -30,20 +30,64 @@ export default function MesajlarPage() {
   const [loading, setLoading] = useState(true)
   const [replyText, setReplyText] = useState('')
   const [sending, setSending] = useState(false)
+  const [connected, setConnected] = useState(false)
+  const lastMsgTime = useRef<string>(new Date(Date.now() - 5000).toISOString())
 
   const selected = messages.find((m) => m.id === selectedId)
   const showDetail = selectedId !== null
 
-  async function load() {
+  const load = useCallback(async () => {
     const params = statusFilter !== 'ALL' ? `?status=${statusFilter}` : ''
     const res = await fetch(`/api/messages${params}`)
     const data = await res.json()
-    setMessages(data.messages || [])
+    const msgs: Message[] = data.messages || []
+    setMessages(msgs)
     setLoading(false)
-  }
+    if (msgs.length > 0) {
+      lastMsgTime.current = msgs.reduce((latest, m) =>
+        m.receivedAt > latest ? m.receivedAt : latest, msgs[0].receivedAt)
+    }
+  }, [statusFilter])
 
-  useEffect(() => { load() }, [statusFilter])
-  useEffect(() => { const t = setInterval(load, 30000); return () => clearInterval(t) }, [statusFilter])
+  // İlk yükleme + filtre değişince
+  useEffect(() => {
+    setLoading(true)
+    load()
+  }, [load])
+
+  // SSE bağlantısı — gerçek zamanlı güncelleme
+  useEffect(() => {
+    let es: EventSource
+    let retryTimeout: ReturnType<typeof setTimeout>
+
+    function connect() {
+      es = new EventSource(`/api/messages/stream?since=${encodeURIComponent(lastMsgTime.current)}`)
+
+      es.onmessage = (e) => {
+        if (e.data === 'connected') {
+          setConnected(true)
+        } else if (e.data === 'refresh') {
+          load()
+        }
+        // 'ping' → yoksay
+      }
+
+      es.onerror = () => {
+        setConnected(false)
+        es.close()
+        // 3 saniye sonra yeniden bağlan
+        retryTimeout = setTimeout(connect, 3000)
+      }
+    }
+
+    connect()
+
+    return () => {
+      es?.close()
+      clearTimeout(retryTimeout)
+      setConnected(false)
+    }
+  }, [load])
 
   async function sendReply() {
     if (!selectedId || !replyText.trim()) return
@@ -82,7 +126,16 @@ export default function MesajlarPage() {
       {/* ── Message list ─────────────────────────────── */}
       <div className={`flex-col gap-3 md:w-72 md:shrink-0 ${showDetail ? 'hidden md:flex' : 'flex'}`}>
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-bold">Mesajlar</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-bold">Mesajlar</h1>
+            {/* Gerçek zamanlı durum göstergesi */}
+            <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium ${
+              connected ? 'bg-green-500/15 text-green-500' : 'bg-muted text-muted-foreground'
+            }`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground'}`} />
+              {connected ? 'Canlı' : 'Bağlanıyor'}
+            </span>
+          </div>
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? 'ALL')}>
             <SelectTrigger className="w-28 h-8 text-xs rounded-xl border-border">
               <SelectValue />
@@ -151,7 +204,6 @@ export default function MesajlarPage() {
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border/50">
               <div className="flex items-center gap-3">
-                {/* Back button — mobile only */}
                 <button
                   onClick={() => setSelectedId(null)}
                   className="md:hidden w-8 h-8 rounded-xl flex items-center justify-center glass-subtle mr-1 active:scale-95 transition-all"
