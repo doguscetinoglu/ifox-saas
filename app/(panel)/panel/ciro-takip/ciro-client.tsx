@@ -11,6 +11,32 @@ import { toast } from 'sonner'
 type Entry = { id: string; date: string; ciro: number; sales: number }
 type GoalMap = Record<string, { ciroGoal: number; salesGoal: number }>
 
+// ── shared dark styles ──────────────────────────────────────────────────────
+const CARD: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.05)',
+  border: '1px solid rgba(255,255,255,0.09)',
+  backdropFilter: 'blur(24px)',
+  WebkitBackdropFilter: 'blur(24px)',
+  borderRadius: 20,
+  boxShadow: '0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08)',
+}
+const INPUT: React.CSSProperties = {
+  width: '100%',
+  border: '1px solid rgba(255,255,255,0.12)',
+  borderRadius: 10,
+  padding: '10px 14px',
+  fontSize: 14,
+  color: '#fff',
+  background: 'rgba(255,255,255,0.06)',
+  outline: 'none',
+  fontFamily: 'inherit',
+  transition: 'border-color .15s, box-shadow .15s',
+}
+const LABEL: React.CSSProperties = {
+  display: 'block', fontSize: 12, fontWeight: 500,
+  color: 'rgba(255,255,255,0.4)', marginBottom: 6,
+}
+
 // ── count-up animation ──────────────────────────────────────────────────────
 function useCountUp(target: number, duration = 1100) {
   const [val, setVal] = useState(0)
@@ -69,12 +95,12 @@ function StatCard({ meta, rawValue, trend, sub }: {
   const animated = useCountUp(rawValue)
   const display = rawValue > 999 ? animated.toLocaleString('tr-TR') : animated
   return (
-    <div style={{
+    <div className="ciro-stat-card" style={{
       background: meta.grad,
       boxShadow: `0 8px 32px ${meta.glow}, 0 2px 8px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.18)`,
       borderRadius: 18, padding: 'clamp(16px,4vw,24px) clamp(14px,3.5vw,22px)',
-      position: 'relative', overflow: 'hidden',
     }}>
+      <div className="ciro-stat-shine" />
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'rgba(255,255,255,0.2)' }} />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
         <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(255,255,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, fontWeight: 700, color: '#fff' }}>
@@ -184,21 +210,18 @@ function PaceRow({ label, current, required, diff, ahead, done, projected, goal,
 }
 
 // ── PaceCard ─────────────────────────────────────────────────────────────────
-function PaceCard({ entries, goals }: { entries: Entry[]; goals: GoalMap }) {
+function PaceCard({ goals, monthKey, totalCiro, totalSales }: {
+  goals: GoalMap; monthKey: string; totalCiro: number; totalSales: number
+}) {
   const today = new Date()
   const year = today.getFullYear()
   const month = today.getMonth()
-  const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const daysPassed = today.getDate()
   const daysRemaining = daysInMonth - daysPassed
 
   const goal = goals[monthKey] || {}
-  if (!goal.ciroGoal && !goal.salesGoal) return null
-
-  const me = entries.filter((e) => e.date.startsWith(monthKey))
-  const totalCiro = me.reduce((s, e) => s + e.ciro, 0)
-  const totalSales = me.reduce((s, e) => s + e.sales, 0)
+  const hasGoal = (goal.ciroGoal || 0) > 0 || (goal.salesGoal || 0) > 0
 
   const currentCiroDaily = daysPassed > 0 ? totalCiro / daysPassed : 0
   const ciroRemaining = Math.max(0, (goal.ciroGoal || 0) - totalCiro)
@@ -219,34 +242,41 @@ function PaceCard({ entries, goals }: { entries: Entry[]; goals: GoalMap }) {
   const monthLabel = today.toLocaleString('tr-TR', { month: 'long', year: 'numeric' })
 
   return (
-    <div className="glass rounded-2xl" style={{ padding: '24px 28px' }}>
+    <div className="ciro-fade-4" style={{ ...CARD, padding: '24px 28px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 22, flexWrap: 'wrap', gap: 10 }}>
         <div>
-          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', marginBottom: 4 }} className="text-muted-foreground">
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.35)', letterSpacing: '1.2px', textTransform: 'uppercase', marginBottom: 4 }}>
             Tempo Analizi · {monthLabel}
           </div>
-          <div style={{ fontSize: 16, fontWeight: 700 }} className="text-foreground">Hedefe Ulaşmak İçin Günlük Hız</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>Hedefe Ulaşmak İçin Günlük Hız</div>
         </div>
         <div style={{ padding: '6px 14px', borderRadius: 20, flexShrink: 0, background: daysRemaining <= 5 ? 'rgba(255,59,48,0.15)' : 'rgba(255,255,255,0.06)', border: `1px solid ${daysRemaining <= 5 ? 'rgba(255,59,48,0.3)' : 'rgba(255,255,255,0.1)'}`, fontSize: 12, fontWeight: 700, color: daysRemaining <= 5 ? '#FF6B6B' : 'rgba(255,255,255,0.5)' }}>
           {daysRemaining > 0 ? `${daysRemaining} gün kaldı` : 'Ay tamamlandı'}
         </div>
       </div>
 
-      {(goal.ciroGoal || 0) > 0 && (
+      {!hasGoal && (
+        <div style={{ padding: '20px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', textAlign: 'center' }}>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 4 }}>Tempo analizi için aylık hedef belirlenmeli</div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>Hedefler sekmesinden bu ay için ciro ve satış hedefi gir</div>
+        </div>
+      )}
+
+      {hasGoal && (goal.ciroGoal || 0) > 0 && (
         <div style={{ marginBottom: (goal.salesGoal || 0) > 0 ? 28 : 0 }}>
           {(goal.salesGoal || 0) > 0 && (
-            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.8px' }} className="text-muted-foreground">Ciro</div>
+            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'rgba(255,255,255,0.3)' }}>Ciro</div>
           )}
           <PaceRow label="Ciro" current={currentCiroDaily} required={requiredCiroDaily} diff={requiredCiroDaily - currentCiroDaily} ahead={ciroAhead} done={ciroDone} projected={ciroProjected} goal={goal.ciroGoal!} pct={ciroPct} suffix="₺" daysRemaining={daysRemaining} total={totalCiro} />
         </div>
       )}
-      {(goal.ciroGoal || 0) > 0 && (goal.salesGoal || 0) > 0 && (
+      {hasGoal && (goal.ciroGoal || 0) > 0 && (goal.salesGoal || 0) > 0 && (
         <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', marginBottom: 28 }} />
       )}
-      {(goal.salesGoal || 0) > 0 && (
+      {hasGoal && (goal.salesGoal || 0) > 0 && (
         <div>
           {(goal.ciroGoal || 0) > 0 && (
-            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.8px' }} className="text-muted-foreground">Satış Adedi</div>
+            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'rgba(255,255,255,0.3)' }}>Satış Adedi</div>
           )}
           <PaceRow label="Satış" current={currentSalesDaily} required={requiredSalesDaily} diff={requiredSalesDaily - currentSalesDaily} ahead={salesAhead} done={salesDone} projected={salesProjected} goal={goal.salesGoal!} pct={salesPct} suffix="adet" daysRemaining={daysRemaining} total={totalSales} />
         </div>
@@ -284,34 +314,41 @@ function Dashboard({ entries, goals }: { entries: Entry[]; goals: GoalMap }) {
   const cardValues = [
     { raw: totalCiro,  trend: ciroTrend,  sub: prevCiro  > 0 ? `Geçen ay ${prevCiro.toLocaleString('tr-TR')} ₺` : 'İlk ay' },
     { raw: totalSales, trend: salesTrend, sub: prevSales > 0 ? `Geçen ay ${prevSales} adet` : 'İlk ay' },
-    { raw: avgCiro,    trend: null,        sub: `${dailyData.length} gün kayıtlı` },
-    { raw: avgOrder,   trend: null,        sub: 'Ciro ÷ Satış adedi' },
+    { raw: avgCiro,    trend: null,       sub: `${dailyData.length} gün kayıtlı` },
+    { raw: avgOrder,   trend: null,       sub: 'Ciro ÷ Satış adedi' },
   ]
 
   return (
-    <div className="space-y-5">
-      <div>
-        <div className="text-xs text-muted-foreground font-semibold uppercase tracking-widest mb-1">{monthLabel}</div>
-        <h2 className="text-2xl font-bold tracking-tight">Genel Bakış</h2>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* header */}
+      <div className="ciro-fade-1">
+        <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '1.5px', color: 'rgba(255,255,255,0.35)', marginBottom: 8, textTransform: 'uppercase' }}>
+          {monthLabel}
+        </div>
+        <div style={{ fontSize: 34, fontWeight: 800, letterSpacing: '-1px', background: 'linear-gradient(90deg, #fff 0%, rgba(255,255,255,0.6) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          Genel Bakış
+        </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+      {/* stat cards */}
+      <div className="ciro-fade-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
         {CARDS_META.map((meta, i) => (
           <StatCard key={meta.id} meta={meta} rawValue={cardValues[i].raw} trend={cardValues[i].trend} sub={cardValues[i].sub} />
         ))}
       </div>
 
-      {((goal.ciroGoal || 0) > 0 || (goal.salesGoal || 0) > 0) && (
-        <div className="glass rounded-2xl" style={{ padding: '24px 28px' }}>
-          <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-5">Aylık Hedefler</div>
+      {/* goals ring */}
+      <div className="ciro-fade-3" style={{ ...CARD, padding: '24px 28px' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.45)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 20 }}>Aylık Hedefler</div>
+        {((goal.ciroGoal || 0) > 0 || (goal.salesGoal || 0) > 0) ? (
           <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap', alignItems: 'center' }}>
             {(goal.ciroGoal || 0) > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
                 <Ring pct={ciroPct} color="#0071E3" />
                 <div>
-                  <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wide mb-1">Ciro Hedefi</div>
-                  <div className="text-xl font-bold text-foreground">{totalCiro.toLocaleString('tr-TR')} ₺</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">/ {goal.ciroGoal!.toLocaleString('tr-TR')} ₺</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Ciro Hedefi</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: '#fff' }}>{totalCiro.toLocaleString('tr-TR')} ₺</div>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>/ {goal.ciroGoal!.toLocaleString('tr-TR')} ₺</div>
                 </div>
               </div>
             )}
@@ -319,19 +356,19 @@ function Dashboard({ entries, goals }: { entries: Entry[]; goals: GoalMap }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
                 <Ring pct={salesPct} color="#34C759" />
                 <div>
-                  <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wide mb-1">Satış Hedefi</div>
-                  <div className="text-xl font-bold text-foreground">{totalSales} adet</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">/ {goal.salesGoal!} adet</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Satış Hedefi</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: '#fff' }}>{totalSales} adet</div>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>/ {goal.salesGoal!} adet</div>
                 </div>
               </div>
             )}
             {(goal.ciroGoal || 0) > 0 && (goal.salesGoal || 0) > 0 && (
-              <div className="bg-border/30" style={{ width: 1, height: 60, flexShrink: 0 }} />
+              <div style={{ width: 1, height: 60, background: 'rgba(255,255,255,0.08)', flexShrink: 0 }} />
             )}
             <div>
               {(goal.ciroGoal || 0) > 0 && (
-                <div className="mb-2">
-                  <div className="text-xs text-muted-foreground mb-0.5">Kalan Ciro</div>
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginBottom: 2 }}>Kalan Ciro</div>
                   <div style={{ fontSize: 16, fontWeight: 700, color: ciroPct >= 100 ? '#34C759' : '#60A5FA' }}>
                     {ciroPct >= 100 ? '✓ Tamamlandı' : `${Math.max(0, goal.ciroGoal! - totalCiro).toLocaleString('tr-TR')} ₺`}
                   </div>
@@ -339,7 +376,7 @@ function Dashboard({ entries, goals }: { entries: Entry[]; goals: GoalMap }) {
               )}
               {(goal.salesGoal || 0) > 0 && (
                 <div>
-                  <div className="text-xs text-muted-foreground mb-0.5">Kalan Satış</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginBottom: 2 }}>Kalan Satış</div>
                   <div style={{ fontSize: 16, fontWeight: 700, color: salesPct >= 100 ? '#34C759' : '#4ADE80' }}>
                     {salesPct >= 100 ? '✓ Tamamlandı' : `${Math.max(0, goal.salesGoal! - totalSales)} adet`}
                   </div>
@@ -347,17 +384,41 @@ function Dashboard({ entries, goals }: { entries: Entry[]; goals: GoalMap }) {
               )}
             </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            <div style={{ display: 'flex', gap: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <Ring pct={0} color="#0071E3" />
+                <div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Ciro Hedefi</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,0.3)' }}>Belirlenmedi</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <Ring pct={0} color="#34C759" />
+                <div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Satış Hedefi</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,0.3)' }}>Belirlenmedi</div>
+                </div>
+              </div>
+            </div>
+            <div style={{ marginLeft: 'auto', padding: '10px 18px', borderRadius: 10, background: 'rgba(0,113,227,0.15)', border: '1px solid rgba(0,113,227,0.3)', color: '#60A5FA', fontSize: 13, fontWeight: 600, cursor: 'default' }}>
+              Hedefler sekmesinden belirle →
+            </div>
+          </div>
+        )}
+      </div>
 
-      <PaceCard entries={entries} goals={goals} />
+      {/* pace card — always visible */}
+      <PaceCard goals={goals} monthKey={monthKey} totalCiro={totalCiro} totalSales={totalSales} />
 
+      {/* daily chart */}
       {dailyData.length > 0 && (
-        <div className="glass rounded-2xl" style={{ padding: '24px 28px 20px' }}>
+        <div className="ciro-fade-5" style={{ ...CARD, padding: '24px 28px 20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
             <div>
-              <div className="text-xs text-muted-foreground font-semibold uppercase tracking-widest mb-1">Günlük Ciro</div>
-              <div className="text-xl font-bold text-foreground">{totalCiro.toLocaleString('tr-TR')} ₺</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.45)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>Günlük Ciro</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: '#fff' }}>{totalCiro.toLocaleString('tr-TR')} ₺</div>
             </div>
             <div style={{ padding: '6px 14px', borderRadius: 20, background: 'rgba(0,113,227,0.2)', border: '1px solid rgba(0,113,227,0.3)', color: '#60A5FA', fontSize: 12, fontWeight: 600 }}>
               {dailyData.length} gün
@@ -371,8 +432,8 @@ function Dashboard({ entries, goals }: { entries: Entry[]; goals: GoalMap }) {
                   <stop offset="100%" stopColor="#0071E3" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(150,150,150,0.7)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: 'rgba(150,150,150,0.7)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} width={38} />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} width={38} />
               <Tooltip content={<DarkTooltip />} cursor={{ stroke: 'rgba(96,165,250,0.3)', strokeWidth: 1, strokeDasharray: '4 4' }} />
               <Area type="monotone" dataKey="ciro" stroke="#3B82F6" strokeWidth={2.5} fill="url(#blueGrad)" dot={false} activeDot={{ r: 5, fill: '#60A5FA', strokeWidth: 0 }} />
             </AreaChart>
@@ -381,10 +442,10 @@ function Dashboard({ entries, goals }: { entries: Entry[]; goals: GoalMap }) {
       )}
 
       {entries.length === 0 && (
-        <div className="glass rounded-2xl text-center py-20">
+        <div style={{ ...CARD, textAlign: 'center', padding: '80px 24px' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>📊</div>
-          <div className="text-lg font-bold text-foreground mb-2">Henüz veri yok</div>
-          <div className="text-sm text-muted-foreground">"Veri Gir" sekmesinden günlük ciro ve satış adedini ekle.</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: 8 }}>Henüz veri yok</div>
+          <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.35)' }}>"Veri Gir" sekmesinden günlük ciro ve satış adedini ekle.</div>
         </div>
       )}
     </div>
@@ -448,68 +509,69 @@ function DataEntry({ entries, onRefresh }: { entries: Entry[]; onRefresh: () => 
   }
 
   return (
-    <div className="space-y-5" style={{ maxWidth: 760, margin: '0 auto' }}>
+    <div style={{ maxWidth: 760, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div>
-        <div className="text-xs text-muted-foreground font-medium mb-1">Günlük Kayıt</div>
-        <h2 className="text-2xl font-bold tracking-tight">Veri Gir</h2>
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', fontWeight: 500, marginBottom: 4 }}>Günlük Kayıt</div>
+        <div style={{ fontSize: 28, fontWeight: 700, color: '#fff', letterSpacing: '-0.6px' }}>Veri Gir</div>
       </div>
 
-      <form onSubmit={handleSubmit} className="glass rounded-2xl p-6">
+      <form onSubmit={handleSubmit} style={{ ...CARD, padding: 28 }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 20 }}>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1.5">Tarih</label>
-            <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl border border-border bg-black/5 dark:bg-white/5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
+            <label style={LABEL}>Tarih</label>
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={INPUT} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1.5">Ciro (₺)</label>
-            <input type="number" min="0" step="0.01" value={ciro} onChange={(e) => setCiro(e.target.value)} placeholder="0"
-              className="w-full px-3 py-2.5 rounded-xl border border-border bg-black/5 dark:bg-white/5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
+            <label style={LABEL}>Ciro (₺)</label>
+            <input type="number" min="0" step="0.01" value={ciro} onChange={(e) => setCiro(e.target.value)} placeholder="0" style={INPUT} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1.5">Satış Adedi</label>
-            <input type="number" min="0" value={sales} onChange={(e) => setSales(e.target.value)} placeholder="0"
-              className="w-full px-3 py-2.5 rounded-xl border border-border bg-black/5 dark:bg-white/5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
+            <label style={LABEL}>Satış Adedi</label>
+            <input type="number" min="0" value={sales} onChange={(e) => setSales(e.target.value)} placeholder="0" style={INPUT} />
           </div>
         </div>
 
-        {error && <div className="bg-red-500/10 text-red-500 rounded-xl px-4 py-3 text-sm mb-4">{error}</div>}
+        {error && (
+          <div style={{ background: 'rgba(255,59,48,0.12)', border: '1px solid rgba(255,59,48,0.25)', color: '#FF6B6B', borderRadius: 10, padding: '10px 14px', fontSize: 13, marginBottom: 16 }}>
+            {error}
+          </div>
+        )}
         {saved && (
-          <div className="flex items-center gap-2 bg-green-500/10 text-green-500 rounded-xl px-4 py-3 text-sm mb-4">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(52,199,89,0.12)', border: '1px solid rgba(52,199,89,0.25)', color: '#4ADE80', borderRadius: 10, padding: '10px 14px', fontSize: 13, marginBottom: 16 }}>
             <CheckCircle2 size={15} /> Kayıt eklendi.
           </div>
         )}
-        <button type="submit" disabled={loading}
-          className="px-6 py-2.5 text-sm rounded-xl cursor-pointer disabled:opacity-40 font-semibold text-white transition-colors"
-          style={{ background: 'linear-gradient(135deg,#0071E3,#0050c8)' }}>
+        <button type="submit" disabled={loading} style={{ background: '#0071E3', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', opacity: loading ? 0.5 : 1, transition: 'opacity .15s' }}>
           {loading ? 'Kaydediliyor...' : 'Kaydet'}
         </button>
       </form>
 
       {monthEntries.length > 0 && (
-        <div className="glass rounded-2xl overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-border/60 flex items-center justify-between">
-            <span className="text-sm font-semibold">{monthKey} Kayıtları</span>
-            <span className="text-xs text-muted-foreground">{monthEntries.length} gün</span>
+        <div style={{ ...CARD, overflow: 'hidden', padding: 0 }}>
+          <div style={{ padding: '18px 24px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 15, fontWeight: 600, color: '#fff' }}>{monthKey} Kayıtları</span>
+            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>{monthEntries.length} gün</span>
           </div>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
               <thead>
-                <tr className="bg-black/3 dark:bg-white/3">
+                <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
                   {['Tarih', 'Ciro', 'Satış', ''].map((h) => (
-                    <th key={h} className="px-5 py-2.5 text-left text-xs font-medium text-muted-foreground">{h}</th>
+                    <th key={h} style={{ padding: '10px 20px', textAlign: 'left', fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.3)' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {monthEntries.map((e) => (
-                  <tr key={e.id} className="border-t border-border/30">
-                    <td className="px-5 py-3 text-sm text-muted-foreground font-medium">{e.date}</td>
-                    <td className="px-5 py-3 text-sm font-semibold" style={{ color: '#60A5FA' }}>{e.ciro.toLocaleString('tr-TR')} ₺</td>
-                    <td className="px-5 py-3 text-sm">{e.sales} adet</td>
-                    <td className="px-5 py-3 text-right">
+                  <tr key={e.id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                    <td style={{ padding: '13px 20px', color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>{e.date}</td>
+                    <td style={{ padding: '13px 20px', fontWeight: 600, color: '#60A5FA' }}>{e.ciro.toLocaleString('tr-TR')} ₺</td>
+                    <td style={{ padding: '13px 20px', color: '#fff' }}>{e.sales} adet</td>
+                    <td style={{ padding: '13px 20px', textAlign: 'right' }}>
                       <button onClick={() => handleDelete(e)} disabled={deleting === e.id}
-                        className="text-muted-foreground hover:text-red-500 transition-colors p-1 cursor-pointer disabled:opacity-40">
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)', padding: 4, transition: 'color .15s', opacity: deleting === e.id ? 0.4 : 1 }}
+                        onMouseEnter={(ev) => (ev.currentTarget.style.color = '#FF6B6B')}
+                        onMouseLeave={(ev) => (ev.currentTarget.style.color = 'rgba(255,255,255,0.25)')}>
                         <Trash2 size={14} />
                       </button>
                     </td>
@@ -517,10 +579,10 @@ function DataEntry({ entries, onRefresh }: { entries: Entry[]; onRefresh: () => 
                 ))}
               </tbody>
               <tfoot>
-                <tr className="border-t border-border/60 bg-black/3 dark:bg-white/3">
-                  <td className="px-5 py-3 text-sm font-semibold text-muted-foreground">Toplam</td>
-                  <td className="px-5 py-3 text-sm font-bold" style={{ color: '#60A5FA' }}>{monthTotal.toLocaleString('tr-TR')} ₺</td>
-                  <td className="px-5 py-3 text-sm font-bold">{salesTotal} adet</td>
+                <tr style={{ borderTop: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)' }}>
+                  <td style={{ padding: '12px 20px', fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.4)' }}>Toplam</td>
+                  <td style={{ padding: '12px 20px', fontWeight: 700, color: '#60A5FA' }}>{monthTotal.toLocaleString('tr-TR')} ₺</td>
+                  <td style={{ padding: '12px 20px', fontWeight: 700, color: '#fff' }}>{salesTotal} adet</td>
                   <td />
                 </tr>
               </tfoot>
@@ -549,16 +611,16 @@ function ProgressBar({ label, current, goal, color }: { label: string; current: 
   const done = pct >= 100
   return (
     <div style={{ marginBottom: 20 }}>
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-medium text-muted-foreground">{label}</span>
-        <span className="text-sm font-bold" style={{ color: done ? '#34C759' : color }}>{pct}% {done && '✓'}</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.5)' }}>{label}</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: done ? '#34C759' : color }}>{pct}% {done && '✓'}</span>
       </div>
-      <div className="h-1.5 rounded-full overflow-hidden bg-black/10 dark:bg-white/10">
+      <div style={{ height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 99, overflow: 'hidden' }}>
         <div style={{ height: '100%', width: `${pct}%`, background: done ? '#34C759' : color, borderRadius: 99, transition: 'width 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
       </div>
-      <div className="flex justify-between mt-1.5">
-        <span className="text-xs text-muted-foreground">{current > 999 ? current.toLocaleString('tr-TR') + ' ₺' : current}</span>
-        <span className="text-xs text-muted-foreground">{goal > 999 ? goal.toLocaleString('tr-TR') + ' ₺' : goal}</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
+        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>{current > 999 ? current.toLocaleString('tr-TR') + ' ₺' : current}</span>
+        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>{goal > 999 ? goal.toLocaleString('tr-TR') + ' ₺' : goal}</span>
       </div>
     </div>
   )
@@ -600,69 +662,67 @@ function Goals({ goals, entries, onRefresh }: { goals: GoalMap; entries: Entry[]
   }
 
   return (
-    <div className="space-y-5" style={{ maxWidth: 760, margin: '0 auto' }}>
+    <div style={{ maxWidth: 760, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div>
-        <div className="text-xs text-muted-foreground font-medium mb-1">Performans</div>
-        <h2 className="text-2xl font-bold tracking-tight">Hedefler</h2>
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', fontWeight: 500, marginBottom: 4 }}>Performans</div>
+        <div style={{ fontSize: 28, fontWeight: 700, color: '#fff', letterSpacing: '-0.6px' }}>Hedefler</div>
       </div>
 
-      <form onSubmit={handleSave} className="glass rounded-2xl p-6">
-        <div className="mb-5">
-          <label className="block text-xs font-medium text-muted-foreground mb-1.5">Ay</label>
+      <form onSubmit={handleSave} style={{ ...CARD, padding: 28 }}>
+        <div style={{ marginBottom: 20 }}>
+          <label style={LABEL}>Ay</label>
           <select value={selectedMonth} onChange={(e) => { setSelectedMonth(e.target.value); setSaved(false); setCiroGoal(''); setSalesGoal('') }}
-            className="w-full px-3 py-2.5 rounded-xl border border-border bg-black/5 dark:bg-white/5 text-sm focus:outline-none cursor-pointer">
+            style={{ ...INPUT, cursor: 'pointer' }}>
             {options.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
           </select>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1.5">Ciro Hedefi (₺)</label>
+            <label style={LABEL}>Ciro Hedefi (₺)</label>
             <input type="number" min="0"
               value={ciroGoal !== '' ? ciroGoal : (existing.ciroGoal || '')}
               onChange={(e) => setCiroGoal(e.target.value)}
               placeholder={existing.ciroGoal ? String(existing.ciroGoal) : 'Örn: 500000'}
-              className="w-full px-3 py-2.5 rounded-xl border border-border bg-black/5 dark:bg-white/5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
+              style={INPUT} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1.5">Satış Hedefi (adet)</label>
+            <label style={LABEL}>Satış Hedefi (adet)</label>
             <input type="number" min="0"
               value={salesGoal !== '' ? salesGoal : (existing.salesGoal || '')}
               onChange={(e) => setSalesGoal(e.target.value)}
               placeholder={existing.salesGoal ? String(existing.salesGoal) : 'Örn: 150'}
-              className="w-full px-3 py-2.5 rounded-xl border border-border bg-black/5 dark:bg-white/5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
+              style={INPUT} />
           </div>
         </div>
         {saved && (
-          <div className="flex items-center gap-2 bg-green-500/10 text-green-500 rounded-xl px-4 py-3 text-sm mb-4">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(52,199,89,0.12)', border: '1px solid rgba(52,199,89,0.25)', color: '#4ADE80', borderRadius: 10, padding: '10px 14px', fontSize: 13, marginBottom: 16 }}>
             <CheckCircle2 size={15} /> Hedef kaydedildi.
           </div>
         )}
-        <button type="submit" disabled={loading}
-          className="px-6 py-2.5 text-sm rounded-xl cursor-pointer disabled:opacity-40 font-semibold text-white"
-          style={{ background: 'linear-gradient(135deg,#0071E3,#0050c8)' }}>
+        <button type="submit" disabled={loading} style={{ background: '#0071E3', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', opacity: loading ? 0.5 : 1, transition: 'opacity .15s' }}>
           {loading ? 'Kaydediliyor...' : 'Kaydet'}
         </button>
       </form>
 
       {((existing.ciroGoal || 0) > 0 || (existing.salesGoal || 0) > 0) && (
-        <div className="glass rounded-2xl p-6">
-          <div className="text-sm font-semibold mb-6">{selectedMonth} Gerçekleşme</div>
+        <div style={{ ...CARD, padding: 28 }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: '#fff', marginBottom: 24 }}>{selectedMonth} Gerçekleşme</div>
           {(existing.ciroGoal || 0) > 0 && <ProgressBar label="Ciro Hedefi" current={actualCiro} goal={existing.ciroGoal!} color="#0071E3" />}
           {(existing.salesGoal || 0) > 0 && <ProgressBar label="Satış Hedefi" current={actualSales} goal={existing.salesGoal!} color="#BF5AF2" />}
         </div>
       )}
 
       {Object.keys(goals).length > 0 && (
-        <div className="glass rounded-2xl overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-border/60">
-            <span className="text-sm font-semibold">Tüm Hedefler</span>
+        <div style={{ ...CARD, overflow: 'hidden', padding: 0 }}>
+          <div style={{ padding: '18px 24px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            <span style={{ fontSize: 15, fontWeight: 600, color: '#fff' }}>Tüm Hedefler</span>
           </div>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
               <thead>
-                <tr className="bg-black/3 dark:bg-white/3">
+                <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
                   {['Ay', 'Ciro Hedefi', 'Gerçekleşen', 'Satış Hedefi', 'Gerçekleşen'].map((h) => (
-                    <th key={h} className="px-5 py-2.5 text-left text-xs font-medium text-muted-foreground">{h}</th>
+                    <th key={h} style={{ padding: '10px 20px', textAlign: 'left', fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.3)' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -672,12 +732,12 @@ function Goals({ goals, entries, onRefresh }: { goals: GoalMap; entries: Entry[]
                   const aC = me.reduce((s, e) => s + e.ciro, 0)
                   const aS = me.reduce((s, e) => s + e.sales, 0)
                   return (
-                    <tr key={key} className="border-t border-border/30">
-                      <td className="px-5 py-3 text-sm font-semibold">{key}</td>
-                      <td className="px-5 py-3 text-sm text-muted-foreground">{(g.ciroGoal || 0) > 0 ? g.ciroGoal!.toLocaleString('tr-TR') + ' ₺' : '—'}</td>
-                      <td className="px-5 py-3 text-sm font-semibold" style={{ color: (g.ciroGoal || 0) > 0 && aC >= g.ciroGoal! ? '#34C759' : '#60A5FA' }}>{aC.toLocaleString('tr-TR')} ₺</td>
-                      <td className="px-5 py-3 text-sm text-muted-foreground">{(g.salesGoal || 0) > 0 ? g.salesGoal! + ' adet' : '—'}</td>
-                      <td className="px-5 py-3 text-sm font-semibold" style={{ color: (g.salesGoal || 0) > 0 && aS >= g.salesGoal! ? '#34C759' : undefined }}>{aS} adet</td>
+                    <tr key={key} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                      <td style={{ padding: '13px 20px', fontWeight: 600, color: '#fff' }}>{key}</td>
+                      <td style={{ padding: '13px 20px', color: 'rgba(255,255,255,0.5)' }}>{(g.ciroGoal || 0) > 0 ? g.ciroGoal!.toLocaleString('tr-TR') + ' ₺' : '—'}</td>
+                      <td style={{ padding: '13px 20px', fontWeight: 600, color: (g.ciroGoal || 0) > 0 && aC >= g.ciroGoal! ? '#34C759' : '#60A5FA' }}>{aC.toLocaleString('tr-TR')} ₺</td>
+                      <td style={{ padding: '13px 20px', color: 'rgba(255,255,255,0.5)' }}>{(g.salesGoal || 0) > 0 ? g.salesGoal! + ' adet' : '—'}</td>
+                      <td style={{ padding: '13px 20px', fontWeight: 600, color: (g.salesGoal || 0) > 0 && aS >= g.salesGoal! ? '#34C759' : '#fff' }}>{aS} adet</td>
                     </tr>
                   )
                 })}
@@ -727,10 +787,10 @@ function Reports({ entries }: { entries: Entry[] }) {
 
   if (entries.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px' }}>
         <div style={{ fontSize: 40, marginBottom: 12 }}>📈</div>
-        <div className="font-semibold text-base mb-1">Henüz veri yok</div>
-        <div className="text-sm text-muted-foreground">Veri girdikten sonra raporlar burada görünür.</div>
+        <div style={{ fontWeight: 600, fontSize: 16, color: 'rgba(255,255,255,0.6)', marginBottom: 6 }}>Henüz veri yok</div>
+        <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13 }}>Veri girdikten sonra raporlar burada görünür.</div>
       </div>
     )
   }
@@ -747,49 +807,51 @@ function Reports({ entries }: { entries: Entry[] }) {
   })
 
   return (
-    <div className="space-y-5">
-      <div className="flex justify-between items-end flex-wrap gap-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <div className="text-xs text-muted-foreground font-medium mb-1">Detaylı Analiz</div>
-          <h2 className="text-2xl font-bold tracking-tight">Raporlar</h2>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', fontWeight: 500, marginBottom: 4 }}>Detaylı Analiz</div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: '#fff', letterSpacing: '-0.6px' }}>Raporlar</div>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <select value={selected} onChange={(e) => setSelected(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-border bg-black/5 dark:bg-white/5 text-sm font-medium focus:outline-none cursor-pointer">
+            style={{ ...INPUT, width: 'auto', padding: '8px 12px', cursor: 'pointer' }}>
             {months.map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
           <button onClick={() => exportExcel(monthEntries, selected)}
-            className="px-4 py-2 text-xs font-semibold rounded-xl text-white cursor-pointer hover:opacity-90 transition-opacity"
-            style={{ background: '#34C759' }}>↓ Excel</button>
+            style={{ background: '#34C759', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+            ↓ Excel
+          </button>
           <button onClick={() => exportPDF(monthEntries, selected, totalCiro, totalSales)}
-            className="px-4 py-2 text-xs font-semibold rounded-xl text-white cursor-pointer hover:opacity-90 transition-opacity"
-            style={{ background: '#FF3B30' }}>↓ PDF</button>
+            style={{ background: '#FF3B30', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+            ↓ PDF
+          </button>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
         {[
-          { label: 'Toplam Ciro', value: `${totalCiro.toLocaleString('tr-TR')} ₺`, color: '#60A5FA' as const },
+          { label: 'Toplam Ciro', value: `${totalCiro.toLocaleString('tr-TR')} ₺`, color: '#60A5FA' },
           { label: 'Toplam Satış', value: `${totalSales} adet`, color: undefined },
           { label: 'Kayıtlı Gün', value: `${monthEntries.length} gün`, color: undefined },
           { label: 'Ort. Sipariş', value: avgOrder > 0 ? `${avgOrder.toLocaleString('tr-TR')} ₺` : '—', color: undefined },
         ].map(({ label, value, color }) => (
-          <div key={label} className="glass rounded-2xl p-5">
-            <div className="text-xs text-muted-foreground font-medium mb-2">{label}</div>
-            <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.5px', color: color }} className={color ? '' : 'text-foreground'}>{value}</div>
+          <div key={label} style={{ ...CARD, padding: 20 }}>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', fontWeight: 500, marginBottom: 8 }}>{label}</div>
+            <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.5px', color: color || '#fff' }}>{value}</div>
           </div>
         ))}
       </div>
 
       {monthEntries.length > 0 && (
-        <div className="glass rounded-2xl p-6">
-          <div className="text-sm font-semibold mb-5">Günlük Ciro — {selected}</div>
+        <div style={{ ...CARD, padding: '24px 28px' }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: '#fff', marginBottom: 20 }}>Günlük Ciro — {selected}</div>
           <ResponsiveContainer width="100%" height={210}>
             <BarChart data={monthEntries.map((e) => ({ date: e.date.slice(5), ciro: e.ciro, sales: e.sales }))} barSize={24}>
-              <CartesianGrid strokeDasharray="0" stroke="rgba(0,0,0,0.06)" vertical={false} />
-              <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(120,120,120,0.8)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: 'rgba(120,120,120,0.8)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} width={38} />
-              <Tooltip content={<LightTooltip />} cursor={{ fill: 'rgba(0,0,0,0.03)' }} />
+              <CartesianGrid strokeDasharray="0" stroke="rgba(255,255,255,0.04)" vertical={false} />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} width={38} />
+              <Tooltip content={<LightTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
               <Bar dataKey="ciro" fill="#0071E3" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -797,13 +859,13 @@ function Reports({ entries }: { entries: Entry[] }) {
       )}
 
       {monthlyTrend.length > 1 && (
-        <div className="glass rounded-2xl p-6">
-          <div className="text-sm font-semibold mb-5">Aylık Ciro Trendi</div>
+        <div style={{ ...CARD, padding: '24px 28px' }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: '#fff', marginBottom: 20 }}>Aylık Ciro Trendi</div>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={monthlyTrend}>
-              <CartesianGrid strokeDasharray="0" stroke="rgba(0,0,0,0.06)" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'rgba(120,120,120,0.8)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: 'rgba(120,120,120,0.8)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} width={38} />
+              <CartesianGrid strokeDasharray="0" stroke="rgba(255,255,255,0.04)" vertical={false} />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} width={38} />
               <Tooltip content={<LightTooltip />} cursor={{ stroke: '#0071E3', strokeWidth: 1, strokeDasharray: '4 4' }} />
               <Line type="monotone" dataKey="ciro" stroke="#0071E3" strokeWidth={2.5} dot={false} activeDot={{ r: 4, fill: '#0071E3', strokeWidth: 0 }} />
             </LineChart>
@@ -811,16 +873,16 @@ function Reports({ entries }: { entries: Entry[] }) {
         </div>
       )}
 
-      <div className="glass rounded-2xl overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-border/60">
-          <span className="text-sm font-semibold">Gün Detayı</span>
+      <div style={{ ...CARD, overflow: 'hidden', padding: 0 }}>
+        <div style={{ padding: '18px 24px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+          <span style={{ fontSize: 15, fontWeight: 600, color: '#fff' }}>Gün Detayı</span>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
             <thead>
-              <tr className="bg-black/3 dark:bg-white/3">
+              <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
                 {['Tarih', 'Ciro', 'Satış Adedi', 'Kümülatif Ciro'].map((h) => (
-                  <th key={h} className="px-5 py-2.5 text-left text-xs font-medium text-muted-foreground">{h}</th>
+                  <th key={h} style={{ padding: '10px 20px', textAlign: 'left', fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.3)' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -830,21 +892,21 @@ function Reports({ entries }: { entries: Entry[] }) {
                 return monthEntries.map((e) => {
                   cum += e.ciro
                   return (
-                    <tr key={e.date} className="border-t border-border/30">
-                      <td className="px-5 py-3 text-sm text-muted-foreground font-medium">{e.date}</td>
-                      <td className="px-5 py-3 text-sm font-semibold" style={{ color: '#60A5FA' }}>{e.ciro.toLocaleString('tr-TR')} ₺</td>
-                      <td className="px-5 py-3 text-sm">{e.sales} adet</td>
-                      <td className="px-5 py-3 text-sm text-muted-foreground">{cum.toLocaleString('tr-TR')} ₺</td>
+                    <tr key={e.date} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                      <td style={{ padding: '12px 20px', color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>{e.date}</td>
+                      <td style={{ padding: '12px 20px', fontWeight: 600, color: '#60A5FA' }}>{e.ciro.toLocaleString('tr-TR')} ₺</td>
+                      <td style={{ padding: '12px 20px', color: '#fff' }}>{e.sales} adet</td>
+                      <td style={{ padding: '12px 20px', color: 'rgba(255,255,255,0.4)' }}>{cum.toLocaleString('tr-TR')} ₺</td>
                     </tr>
                   )
                 })
               })()}
             </tbody>
             <tfoot>
-              <tr className="border-t border-border/60 bg-black/3 dark:bg-white/3">
-                <td className="px-5 py-3 text-sm font-semibold text-muted-foreground">Toplam</td>
-                <td className="px-5 py-3 text-sm font-bold" style={{ color: '#60A5FA' }}>{totalCiro.toLocaleString('tr-TR')} ₺</td>
-                <td className="px-5 py-3 text-sm font-bold">{totalSales} adet</td>
+              <tr style={{ borderTop: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)' }}>
+                <td style={{ padding: '12px 20px', fontWeight: 600, fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>Toplam</td>
+                <td style={{ padding: '12px 20px', fontWeight: 700, color: '#60A5FA' }}>{totalCiro.toLocaleString('tr-TR')} ₺</td>
+                <td style={{ padding: '12px 20px', fontWeight: 700, color: '#fff' }}>{totalSales} adet</td>
                 <td />
               </tr>
             </tfoot>
@@ -871,32 +933,57 @@ export default function CiroClient({ entries: initial, goals: initialGoals }: { 
   }, [])
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-start justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">📈 Ciro Takip</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Günlük ciro ve satış analizi</p>
-        </div>
-        <div className="flex items-center gap-1.5 glass-subtle px-3 py-1.5 rounded-xl border border-border/40">
-          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-          <span className="text-xs text-muted-foreground">Aktif</span>
-        </div>
+    <div style={{
+      background: 'linear-gradient(160deg, #060D1F 0%, #0D1933 45%, #0A0618 100%)',
+      borderRadius: 20,
+      padding: '32px 28px 48px',
+      minHeight: '70vh',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* dot grid */}
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0, backgroundImage: 'radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+      {/* ambient glows */}
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+        <div style={{ position: 'absolute', top: '5%', left: '10%', width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(0,113,227,0.12) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', bottom: '10%', right: '5%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(175,82,222,0.10) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 800, height: 400, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(52,199,89,0.04) 0%, transparent 70%)' }} />
       </div>
 
-      <div className="flex gap-1 p-1 glass rounded-xl w-fit">
-        {TABS.map((t) => (
-          <button key={t} onClick={() => setTab(t)}
-            className="px-4 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer"
-            style={{ background: tab === t ? 'rgba(0,113,227,0.15)' : 'transparent', color: tab === t ? '#3B82F6' : undefined }}>
-            {t}
-          </button>
-        ))}
-      </div>
+      {/* content */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {/* header row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 28 }}>
+          <div>
+            <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px', margin: 0 }}>📈 Ciro Takip</h1>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>Günlük ciro ve satış analizi</p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '6px 12px' }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#34C759', display: 'inline-block', boxShadow: '0 0 6px #34C759' }} />
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>Aktif</span>
+          </div>
+        </div>
 
-      {tab === 'Dashboard' && <Dashboard entries={entries} goals={goals} />}
-      {tab === 'Veri Gir' && <DataEntry entries={entries} onRefresh={refresh} />}
-      {tab === 'Hedefler' && <Goals goals={goals} entries={entries} onRefresh={refresh} />}
-      {tab === 'Raporlar' && <Reports entries={entries} />}
+        {/* tabs */}
+        <div style={{ display: 'flex', gap: 4, padding: 4, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, width: 'fit-content', marginBottom: 28 }}>
+          {TABS.map((t) => (
+            <button key={t} onClick={() => setTab(t)}
+              style={{
+                padding: '8px 18px', fontSize: 13, fontWeight: 600, borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit', transition: 'all .15s',
+                background: tab === t ? 'rgba(0,113,227,0.25)' : 'transparent',
+                color: tab === t ? '#60A5FA' : 'rgba(255,255,255,0.45)',
+                boxShadow: tab === t ? '0 0 0 1px rgba(0,113,227,0.4)' : 'none',
+              }}>
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {tab === 'Dashboard' && <Dashboard entries={entries} goals={goals} />}
+        {tab === 'Veri Gir'  && <DataEntry entries={entries} onRefresh={refresh} />}
+        {tab === 'Hedefler'  && <Goals goals={goals} entries={entries} onRefresh={refresh} />}
+        {tab === 'Raporlar'  && <Reports entries={entries} />}
+      </div>
     </div>
   )
 }

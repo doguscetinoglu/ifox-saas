@@ -372,3 +372,51 @@ html { scroll-behavior: smooth; }
   50%     { opacity: 1; }
 }
 .border-glow { animation: border-glow 3s ease-in-out infinite; }
+
+/* ══════════════════════════════════════════════════════
+   CIRO TAKIP
+══════════════════════════════════════════════════════ */
+@keyframes ciro-fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ciro-shimmer {
+  from { transform: translateX(-120%) skewX(-15deg); }
+  to   { transform: translateX(220%) skewX(-15deg); }
+}
+
+.ciro-fade-1 { animation: ciro-fadeUp .5s ease both; }
+.ciro-fade-2 { animation: ciro-fadeUp .5s .08s ease both; }
+.ciro-fade-3 { animation: ciro-fadeUp .5s .16s ease both; }
+.ciro-fade-4 { animation: ciro-fadeUp .5s .24s ease both; }
+.ciro-fade-5 { animation: ciro-fadeUp .5s .32s ease both; }
+
+.ciro-stat-card {
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.ciro-stat-card:hover { transform: translateY(-4px) scale(1.01); }
+.ciro-stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 45%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.09), transparent);
+  animation: ciro-shimmer 4s 1s infinite;
+  pointer-events: none;
+}
+.ciro-stat-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 55%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* dark select options */
+.ciro-wrap select option {
+  background: #0D1933;
+  color: #fff;
+}
