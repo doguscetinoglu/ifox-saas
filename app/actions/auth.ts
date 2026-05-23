@@ -9,8 +9,8 @@ import { createSession, deleteSession } from '@/lib/session'
 const RegisterSchema = z.object({
   name: z.string().min(2, { message: 'Ad en az 2 karakter olmalı.' }).trim(),
   email: z.email({ message: 'Geçerli bir e-posta girin.' }).trim(),
-  companyName: z.string().min(2, { message: 'Şirket adı en az 2 karakter olmalı.' }).trim(),
-  password: z.string().min(8, { message: 'Şifre en az 8 karakter olmalı.' }),
+  companyName: z.string().optional(),
+  password: z.string().min(6, { message: 'Şifre en az 6 karakter olmalı.' }),
 })
 
 const LoginSchema = z.object({
@@ -27,7 +27,7 @@ export async function register(state: FormState, formData: FormData): Promise<Fo
   const validated = RegisterSchema.safeParse({
     name: formData.get('name'),
     email: formData.get('email'),
-    companyName: formData.get('companyName'),
+    companyName: formData.get('companyName') || undefined,
     password: formData.get('password'),
   })
 
@@ -42,42 +42,14 @@ export async function register(state: FormState, formData: FormData): Promise<Fo
     return { errors: { email: ['Bu e-posta adresi zaten kayıtlı.'] } }
   }
 
-  const pkg = await prisma.package.findFirst()
-  if (!pkg) return { message: 'Paket bulunamadı. Lütfen yönetici ile iletişime geçin.' }
-
   const hashedPassword = await bcrypt.hash(password, 12)
 
   const user = await prisma.user.create({
-    data: {
-      name,
-      email,
-      companyName,
-      password: hashedPassword,
-      role: 'OWNER',
-      status: 'PENDING',
-      ownedCustomer: {
-        create: {
-          companyName,
-          packageId: pkg.id,
-          paymentRequests: {
-            create: { amount: pkg.price },
-          },
-        },
-      },
-    },
-    include: { ownedCustomer: true },
+    data: { name, email, companyName, password: hashedPassword, role: 'USER', status: 'ACTIVE' },
   })
 
-  await createSession({
-    userId: user.id,
-    email: user.email,
-    name: user.name,
-    role: user.role,
-    status: user.status,
-    customerId: user.ownedCustomer?.id ?? null,
-  })
-
-  redirect('/odeme')
+  await createSession({ userId: user.id, email: user.email, name: user.name, role: user.role, status: user.status })
+  redirect('/panel')
 }
 
 export async function login(state: FormState, formData: FormData): Promise<FormState> {
@@ -91,28 +63,15 @@ export async function login(state: FormState, formData: FormData): Promise<FormS
   }
 
   const { email, password } = validated.data
-
-  const user = await prisma.user.findUnique({
-    where: { email },
-    include: { ownedCustomer: true },
-  })
+  const user = await prisma.user.findUnique({ where: { email } })
 
   if (!user || !(await bcrypt.compare(password, user.password))) {
     return { errors: { email: ['E-posta veya şifre hatalı.'] } }
   }
 
-  await createSession({
-    userId: user.id,
-    email: user.email,
-    name: user.name,
-    role: user.role,
-    status: user.status,
-    customerId: user.ownedCustomer?.id ?? user.customerId ?? null,
-  })
+  await createSession({ userId: user.id, email: user.email, name: user.name, role: user.role, status: user.status })
 
   if (user.role === 'ADMIN') redirect('/admin')
-  if (user.status === 'PENDING') redirect('/odeme')
-  if (user.role === 'EMPLOYEE') redirect('/panel/mesajlar')
   redirect('/panel')
 }
 

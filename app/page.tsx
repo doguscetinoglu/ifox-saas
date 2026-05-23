@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Card3D } from '@/components/ui/card-3d'
 
-/* ─── Animated counter ────────────────────────────────────── */
 function useCounter(target: number, duration: number, active: boolean) {
   const [val, setVal] = useState(0)
   useEffect(() => {
@@ -42,7 +41,6 @@ function StatBox({ target, suffix, label }: { target: number; suffix: string; la
   )
 }
 
-/* ─── Scroll-fade wrapper ─────────────────────────────────── */
 function FadeIn({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
   const ref = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(false)
@@ -62,41 +60,69 @@ function FadeIn({ children, delay = 0, className = '' }: { children: React.React
   )
 }
 
-/* ─── Data ────────────────────────────────────────────────── */
-const FEATURES = [
-  { icon: '💬', title: 'Merkezi Mesaj Kutusu', desc: 'Tüm Instagram DM\'lerini tek ekranda görün, yanıtlayın ve takip edin.', gradient: 'stat-blue', glow: 'blue' },
-  { icon: '🎯', title: 'Akıllı Lead Takibi', desc: 'Potansiyel müşterileri otomatik etiketleyin, hiç birini kaçırmayın.', gradient: 'stat-green', glow: 'green' },
-  { icon: '👥', title: 'Ekip Yönetimi', desc: 'Çalışanlarınıza erişim tanıyın, performanslarını gerçek zamanlı izleyin.', gradient: 'stat-violet', glow: 'violet' },
-  { icon: '📊', title: 'Detaylı Raporlar', desc: 'Günlük, haftalık, aylık analizler. Büyümenizi verilerle takip edin.', gradient: 'stat-cyan', glow: 'cyan' },
-  { icon: '🤖', title: 'Güçlü Otomasyon', desc: 'N8N ile iş akışlarını otomatikleştirin. 2 talep pakete dahil ücretsiz.', gradient: 'stat-orange', glow: 'orange' },
-  { icon: '🔗', title: 'ManyChat Entegrasyonu', desc: 'Hesabınızı bağlayın, mesajlar anında sisteme düşsün.', gradient: 'stat-rose', glow: 'rose' },
+const PRODUCTS = [
+  {
+    icon: '📈',
+    name: 'Ciro Takip',
+    slug: 'ciro-takip',
+    desc: 'Günlük, haftalık ve aylık cirowunuzu kaydedin. Hedeflerinizi belirleyin, büyümenizi verilerle izleyin.',
+    gradient: 'stat-blue',
+    glow: 'blue',
+    features: ['Gelir kaydı ve kategori', 'Haftalık/aylık hedef', 'Grafik analiz', 'CSV dışa aktarım'],
+  },
+  {
+    icon: '💰',
+    name: 'Borç Takip',
+    slug: 'borc-takip',
+    desc: 'Müşterilerinizin borçlarını takip edin, vade tarihlerini kaçırmayın, ödeme geçmişini görün.',
+    gradient: 'stat-green',
+    glow: 'green',
+    features: ['Müşteri bazlı borç kaydı', 'Vade tarihi uyarıları', 'Kısmi ödeme takibi', 'Gecikme raporu'],
+  },
+  {
+    icon: '🦊',
+    name: 'Fox CRM',
+    slug: 'fox-crm',
+    desc: 'Müşteri ilişkilerinizi yönetin. Destek biletleri, projeler ve görevlerle tam kontrol sağlayın.',
+    gradient: 'stat-violet',
+    glow: 'violet',
+    features: ['Müşteri veritabanı', 'Destek bileti sistemi', 'Proje ve görev yönetimi', '7/24 takip'],
+  },
+  {
+    icon: '🤖',
+    name: 'Sosyal Medya Otomasyonu',
+    slug: 'otomasyon',
+    desc: 'N8N ve ManyChat ile iş akışlarınızı otomatikleştirin. İnsan müdahalesine gerek kalmadan çalışsın.',
+    gradient: 'stat-rose',
+    glow: 'rose',
+    features: ['N8N entegrasyonu', 'ManyChat bağlantısı', 'Otomatik yanıt akışları', 'Webhook desteği'],
+  },
+  {
+    icon: '📊',
+    name: 'Raporlama',
+    slug: 'raporlama',
+    desc: 'Tüm verilerinizi tek ekranda görün. Özelleştirilebilir raporlarla iş kararlarınızı güçlendirin.',
+    gradient: 'stat-cyan',
+    glow: 'cyan',
+    features: ['Çoklu modül raporu', 'Tarih bazlı filtreleme', 'Grafik ve tablo görünümü', 'PDF/CSV export'],
+  },
 ]
 
-const FAKE_MESSAGES = [
-  { name: 'Ayşe K.', msg: 'Merhaba, fiyat listesi alabilir miyim? 🙏', time: '2dk', status: 'Yeni', lead: true, color: 'stat-rose' },
-  { name: 'Mehmet U.', msg: 'Logo tasarımını beğendim, devam edelim', time: '8dk', status: 'Yanıtlandı', lead: false, color: 'stat-blue' },
-  { name: 'Zeynep D.', msg: 'Sosyal medya paketi hakkında bilgi?', time: '15dk', status: 'Yeni', lead: true, color: 'stat-violet' },
-  { name: 'Can A.', msg: 'Teşekkürler, yarın ödeme yapacağım', time: '32dk', status: 'Kapalı', lead: false, color: 'stat-green' },
-  { name: 'Selin T.', msg: 'Instagram\'ı kim yönetiyor sizin?', time: '1sa', status: 'Yeni', lead: false, color: 'stat-orange' },
-]
-
-/* ─── Main ────────────────────────────────────────────────── */
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
 
-      {/* ══ NAV ══════════════════════════════════════════════ */}
       <nav className="fixed top-0 inset-x-0 z-50 glass border-b border-white/10" style={{ height: 60 }}>
         <div className="max-w-6xl mx-auto px-5 h-full flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center text-base shrink-0"
               style={{ background: 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)' }}>🦊</div>
             <span className="font-bold text-sm gradient-text">iFox</span>
-            <span className="text-sm text-muted-foreground font-medium">Social</span>
+            <span className="text-sm text-muted-foreground font-medium">Yazılım</span>
           </div>
 
           <div className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
-            <a href="#ozellikler" className="hover:text-foreground transition-colors cursor-pointer">Özellikler</a>
+            <a href="#urunler" className="hover:text-foreground transition-colors cursor-pointer">Özellikler</a>
             <a href="#nasil-calisir" className="hover:text-foreground transition-colors cursor-pointer">Nasıl Çalışır</a>
             <a href="#fiyatlandirma" className="hover:text-foreground transition-colors cursor-pointer">Fiyatlandırma</a>
           </div>
@@ -112,10 +138,7 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ══ HERO ═════════════════════════════════════════════ */}
       <section className="mesh-bg min-h-screen flex items-center justify-center relative overflow-hidden pt-16">
-
-        {/* Ambient orbs */}
         <div className="absolute inset-0 pointer-events-none" aria-hidden>
           <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] rounded-full animate-blob"
             style={{ background: 'radial-gradient(circle,rgba(124,124,248,0.12) 0%,transparent 70%)', filter: 'blur(60px)' }} />
@@ -125,26 +148,20 @@ export default function LandingPage() {
             style={{ background: 'radial-gradient(circle,rgba(16,185,129,0.06) 0%,transparent 70%)', filter: 'blur(50px)' }} />
         </div>
 
-        {/* ── Floating left elements ── */}
         <div className="absolute top-32 left-[4%] hidden xl:block animate-float" style={{ animationDelay: '0s' }}>
-          <div className="glass rounded-2xl p-4 max-w-[220px] shadow-2xl border border-white/10">
-            <div className="flex items-center gap-2 mb-2.5">
-              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse shrink-0" />
-              <span className="text-xs text-muted-foreground font-medium">@ayse_boutique</span>
-            </div>
-            <p className="text-sm text-white/90">Merhaba! Ürün fiyatı nedir? 🙏</p>
-            <div className="mt-2.5 flex justify-end">
-              <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full font-semibold">● Yeni</span>
-            </div>
+          <div className="glass rounded-2xl p-4 max-w-[200px] shadow-2xl border border-white/10">
+            <div className="w-8 h-8 rounded-xl stat-blue flex items-center justify-center text-lg mb-2">📈</div>
+            <p className="text-xs font-semibold text-white/90">Ciro Takip</p>
+            <p className="text-xs text-green-400 mt-1 font-medium">↑ %23 bu ay</p>
           </div>
         </div>
 
         <div className="absolute top-[54%] left-[3%] hidden xl:block animate-float" style={{ animationDelay: '1.8s' }}>
           <div className="glass rounded-2xl px-4 py-3 flex items-center gap-3 shadow-2xl border border-white/10">
-            <div className="w-9 h-9 rounded-xl stat-green flex items-center justify-center text-lg shrink-0">🎯</div>
+            <div className="w-9 h-9 rounded-xl stat-green flex items-center justify-center text-lg shrink-0">💰</div>
             <div>
-              <p className="text-xs font-semibold text-white/90">Yeni Lead Eklendi!</p>
-              <p className="text-xs text-muted-foreground">@mehmet_usta → kaydedildi</p>
+              <p className="text-xs font-semibold text-white/90">Borç Uyarısı</p>
+              <p className="text-xs text-muted-foreground">3 vade yarın!</p>
             </div>
           </div>
         </div>
@@ -153,103 +170,76 @@ export default function LandingPage() {
           <div className="glass rounded-2xl px-4 py-3 flex items-center gap-3 shadow-2xl border border-white/10">
             <div className="w-9 h-9 rounded-xl stat-cyan flex items-center justify-center text-lg shrink-0">📊</div>
             <div>
-              <p className="text-xs font-semibold text-white/90">Bugün 24 mesaj</p>
-              <p className="text-xs text-green-400 font-medium">↑ %96 yanıt oranı</p>
+              <p className="text-xs font-semibold text-white/90">Raporlama</p>
+              <p className="text-xs text-green-400 font-medium">Hazır ✓</p>
             </div>
           </div>
         </div>
 
-        {/* ── Floating right elements ── */}
         <div className="absolute top-36 right-[4%] hidden xl:block animate-float" style={{ animationDelay: '1.2s' }}>
-          <div className="glass rounded-2xl p-4 max-w-[220px] shadow-2xl border border-white/10">
-            <div className="flex items-center gap-2 mb-2.5">
-              <div className="w-6 h-6 rounded-lg stat-rose flex items-center justify-center text-white text-xs font-bold">Z</div>
-              <span className="text-xs font-medium text-white/80">zeynep_tasarim</span>
-            </div>
-            <p className="text-xs text-muted-foreground mb-2">Logo tasarımı yaptırabilir miyim?</p>
-            <div className="p-2 rounded-xl" style={{ background: 'rgba(124,124,248,0.15)' }}>
-              <p className="text-xs text-primary">Evet tabii! Detayları paylaşır mısınız? ✉️</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="absolute top-[52%] right-[3%] hidden xl:block animate-float" style={{ animationDelay: '0.4s' }}>
-          <div className="glass rounded-2xl p-4 shadow-2xl border border-white/10" style={{ minWidth: 190 }}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold text-white/80">Haftalık Özet</span>
-              <span className="text-xs text-green-400 font-semibold">↑ %18</span>
-            </div>
-            <div className="flex items-end gap-1 h-12 mb-2">
-              {[40, 65, 45, 80, 60, 90, 75].map((h, i) => (
-                <div key={i} className="flex-1 rounded-t-sm stat-blue" style={{ height: `${h}%`, opacity: 0.7 }} />
-              ))}
-            </div>
-            <p className="text-xs text-muted-foreground">147 mesaj işlendi</p>
+          <div className="glass rounded-2xl p-4 max-w-[200px] shadow-2xl border border-white/10">
+            <div className="w-8 h-8 rounded-xl stat-violet flex items-center justify-center text-lg mb-2">🦊</div>
+            <p className="text-xs font-semibold text-white/90">Fox CRM</p>
+            <p className="text-xs text-muted-foreground mt-1">12 aktif müşteri</p>
           </div>
         </div>
 
         <div className="absolute bottom-32 right-[5%] hidden xl:block animate-float" style={{ animationDelay: '2.5s' }}>
           <div className="glass rounded-2xl px-4 py-3 flex items-center gap-3 shadow-2xl border border-white/10">
-            <div className="w-9 h-9 rounded-xl stat-violet flex items-center justify-center text-lg shrink-0">🤖</div>
+            <div className="w-9 h-9 rounded-xl stat-rose flex items-center justify-center text-lg shrink-0">🤖</div>
             <div>
-              <p className="text-xs font-semibold text-white/90">Otomasyon Aktif</p>
-              <p className="text-xs text-muted-foreground">N8N → ManyChat ✓</p>
+              <p className="text-xs font-semibold text-white/90">Otomasyon</p>
+              <p className="text-xs text-muted-foreground">N8N aktif ✓</p>
             </div>
           </div>
         </div>
 
-        {/* ── Center content ── */}
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
           <FadeIn delay={0}>
             <div className="inline-flex items-center gap-2 glass-subtle px-4 py-2 rounded-full text-sm mb-8 border border-white/10">
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse shrink-0" />
-              <span className="text-white/60">ManyChat + N8N Entegrasyonlu</span>
-              <span className="shimmer-text font-semibold">Beta</span>
+              <span className="text-white/60">5 Güçlü Araç, 1 Platform</span>
+              <span className="shimmer-text font-semibold">Yeni</span>
             </div>
           </FadeIn>
 
           <FadeIn delay={80}>
             <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-[1.15]">
-              <span className="text-white">Instagram</span>
+              <span className="text-white">İşinizi Büyütecek</span>
               <br />
-              <span className="text-white">Mesajlarını</span>
-              <br />
-              <span className="shimmer-text">Profesyonelce</span>
-              {' '}
-              <span className="text-white">Yönet</span>
+              <span className="shimmer-text">Dijital Araçlar</span>
             </h1>
           </FadeIn>
 
           <FadeIn delay={160}>
             <p className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto mb-10 leading-relaxed">
-              Tüm DM&apos;leri tek panelden görün, yanıtlayın ve lead&apos;e dönüştürün.
-              Ekibinizle birlikte çalışın, raporlarla büyüyün.
+              Ciro takibinden borç yönetimine, CRM&apos;den sosyal medya otomasyonuna kadar
+              işinizin her alanını tek platformdan kontrol edin.
             </p>
           </FadeIn>
 
           <FadeIn delay={240}>
             <div className="flex items-center gap-4 justify-center flex-wrap">
               <Link href="/kayit" className="btn-apple text-base px-8 py-4">
-                Ücretsiz Dene →
+                Hemen Başla →
               </Link>
               <a href="#nasil-calisir"
                 className="text-sm font-medium text-white/50 hover:text-white/90 flex items-center gap-2 px-5 py-4 glass-subtle rounded-full transition-colors border border-white/10 cursor-pointer">
-                <span className="text-xs">▶</span> Nasıl çalışır?
+                <span className="text-xs">▶</span> Nasıl Çalışır?
               </a>
             </div>
           </FadeIn>
 
-          {/* Social proof avatars */}
           <FadeIn delay={320}>
             <div className="mt-12 flex items-center justify-center gap-6 flex-wrap">
               <div className="flex items-center gap-1">
-                {['🦊', '🐯', '🦁', '🐺', '🦅'].map((e, i) => (
+                {['📈', '💰', '🦊', '🤖', '📊'].map((e, i) => (
                   <div key={i} className="w-8 h-8 rounded-full glass border-2 border-white/10 flex items-center justify-center text-sm"
                     style={{ marginLeft: i > 0 ? -10 : 0 }}>
                     {e}
                   </div>
                 ))}
-                <span className="text-sm text-white/50 ml-3">50+ işletme kullanıyor</span>
+                <span className="text-sm text-white/50 ml-3">500+ kullanıcı güveniyor</span>
               </div>
               <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((s) => <span key={s} className="text-yellow-400 text-sm">★</span>)}
@@ -259,7 +249,6 @@ export default function LandingPage() {
           </FadeIn>
         </div>
 
-        {/* Scroll indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce opacity-40">
           <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center pt-2">
             <div className="w-1 h-2.5 rounded-full bg-white/60" />
@@ -267,42 +256,43 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ══ STATS ════════════════════════════════════════════ */}
       <section className="py-16 glass border-y border-border/50">
         <div className="max-w-4xl mx-auto px-4 grid grid-cols-2 lg:grid-cols-4 gap-8">
-          <StatBox target={10000} suffix="+" label="İşlenen Mesaj" />
-          <StatBox target={500} suffix="+" label="Aktif Lead" />
-          <StatBox target={96} suffix="%" label="Yanıt Oranı" />
-          <StatBox target={50} suffix="+" label="Mutlu İşletme" />
+          <StatBox target={500} suffix="+" label="Kullanıcı" />
+          <StatBox target={99} suffix="%" label="Uptime" />
+          <StatBox target={5} suffix="" label="Ürün" />
+          <StatBox target={24} suffix="/7" label="Destek" />
         </div>
       </section>
 
-      {/* ══ FEATURES ═════════════════════════════════════════ */}
-      <section id="ozellikler" className="py-24 px-4">
+      <section id="urunler" className="py-24 px-4">
         <div className="max-w-6xl mx-auto">
           <FadeIn className="text-center mb-16">
             <div className="inline-flex items-center gap-2 glass-subtle px-4 py-1.5 rounded-full text-xs text-muted-foreground mb-4">
-              ✨ Özellikler
+              ✨ Ürünlerimiz
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-              Her Şey <span className="gradient-text">Tek Panelde</span>
+              İşinize Özel <span className="gradient-text">5 Araç</span>
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto text-base">
-              Instagram mesaj yönetiminden lead takibine, otomasyon entegrasyonundan
-              detaylı raporlara kadar ihtiyacınız olan her şey.
+              Her biri kendi alanında güçlü, birlikte kullandığınızda işinizi uçuran araçlar.
             </p>
           </FadeIn>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {FEATURES.map((f, i) => (
-              <FadeIn key={f.title} delay={i * 70}>
-                <div className={`glow-${f.glow} rounded-2xl h-full`}>
-                  <Card3D className="glass rounded-2xl p-6 h-full">
-                    <div className={`w-12 h-12 rounded-2xl ${f.gradient} flex items-center justify-center text-2xl mb-4`}>
-                      {f.icon}
+            {PRODUCTS.map((p, i) => (
+              <FadeIn key={p.name} delay={i * 70}>
+                <div className={`glow-${p.glow} rounded-2xl h-full`}>
+                  <Card3D className="glass rounded-2xl p-6 h-full flex flex-col">
+                    <div className={`w-12 h-12 rounded-2xl ${p.gradient} flex items-center justify-center text-2xl mb-4`}>
+                      {p.icon}
                     </div>
-                    <h3 className="font-semibold text-base mb-2">{f.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                    <h3 className="font-semibold text-base mb-2">{p.name}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-4 flex-1">{p.desc}</p>
+                    <Link href="/kayit"
+                      className="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
+                      Satın Al →
+                    </Link>
                   </Card3D>
                 </div>
               </FadeIn>
@@ -311,7 +301,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ══ HOW IT WORKS ═════════════════════════════════════ */}
       <section id="nasil-calisir" className="py-24 px-4 relative overflow-hidden">
         <div className="absolute inset-0 panel-bg opacity-50" />
         <div className="max-w-5xl mx-auto relative z-10">
@@ -326,14 +315,13 @@ export default function LandingPage() {
           </FadeIn>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-            {/* Connector */}
             <div className="hidden md:block absolute top-12 left-[calc(33%+24px)] right-[calc(33%+24px)] h-px"
               style={{ background: 'linear-gradient(90deg,rgba(124,124,248,0.5),rgba(139,92,246,0.5))' }} />
 
             {[
-              { step: '01', icon: '🔗', title: 'Hesabını Bağla', desc: 'Instagram & ManyChat hesabını birkaç tıkla entegre et. Kurulum 5 dakika.', gradient: 'stat-blue' },
-              { step: '02', icon: '💬', title: 'Mesajları Yönet', desc: 'Gelen tüm DM\'ler panelinde görünür. Ekibinle yanıtla, lead olarak etiketle.', gradient: 'stat-violet' },
-              { step: '03', icon: '📈', title: 'Büyümeni Ölç', desc: 'Günlük, haftalık performansını analiz et, otomasyon ile işini büyüt.', gradient: 'stat-green' },
+              { step: '01', icon: '✍️', title: 'Kayıt Ol', desc: 'Hızlıca hesap oluşturun. Ad, e-posta ve şifre yeterli — dakikalar içinde hazır.', gradient: 'stat-blue' },
+              { step: '02', icon: '🛒', title: 'Ürünü Seç & Öde', desc: 'İhtiyacınız olan ürünü seçin, IBAN ile ödeme yapın. Admin onayından sonra erişim açılır.', gradient: 'stat-violet' },
+              { step: '03', icon: '🚀', title: 'Hemen Kullan', desc: 'Panele girin ve kullanmaya başlayın. Her şey hazır, kurulum gerektirmez.', gradient: 'stat-green' },
             ].map((s, i) => (
               <FadeIn key={s.step} delay={i * 120}>
                 <Card3D className="glass rounded-2xl p-6 text-center h-full">
@@ -355,208 +343,55 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ══ DASHBOARD PREVIEW ════════════════════════════════ */}
-      <section className="py-24 px-4">
-        <div className="max-w-6xl mx-auto">
-          <FadeIn className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 glass-subtle px-4 py-1.5 rounded-full text-xs text-muted-foreground mb-4">
-              👁️ Ürün Önizlemesi
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-              Tam Kontrol <span className="gradient-text">Tek Ekranda</span>
-            </h2>
-            <p className="text-muted-foreground">İşte panelin gerçek görünümü. Sade, hızlı, güçlü.</p>
-          </FadeIn>
-
-          <FadeIn delay={100}>
-            <div className="gradient-border rounded-3xl overflow-hidden shadow-2xl">
-              <div className="glass">
-                {/* Browser chrome */}
-                <div className="flex items-center gap-2 px-5 py-3.5 border-b border-border/50">
-                  <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-400/80" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-400/80" />
-                    <div className="w-3 h-3 rounded-full bg-green-400/80" />
-                  </div>
-                  <div className="flex-1 glass-subtle rounded-lg h-7 mx-4 flex items-center px-3">
-                    <span className="w-2 h-2 rounded-full bg-green-400 mr-2 shrink-0 animate-pulse" />
-                    <span className="text-xs text-muted-foreground">ifox.social/panel/mesajlar</span>
-                  </div>
-                </div>
-
-                {/* Fake UI */}
-                <div className="overflow-x-auto">
-                <div className="flex" style={{ minHeight: 400, minWidth: 600 }}>
-                  {/* Sidebar */}
-                  <div className="w-44 shrink-0 border-r border-border/50 p-3 space-y-1">
-                    <div className="px-2 py-2 mb-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-lg flex items-center justify-center text-sm"
-                          style={{ background: 'linear-gradient(135deg,#667eea,#764ba2)' }}>🦊</div>
-                        <span className="text-xs font-bold gradient-text">iFox</span>
-                      </div>
-                    </div>
-                    {[
-                      { icon: '▦', label: 'Dashboard', active: false },
-                      { icon: '💬', label: 'Mesajlar', active: true },
-                      { icon: '🎯', label: 'Leadler', active: false },
-                      { icon: '📈', label: 'Raporlar', active: false },
-                      { icon: '🤖', label: 'Otomasyon', active: false },
-                      { icon: '👤', label: 'Hesabım', active: false },
-                    ].map((item) => (
-                      <div key={item.label}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${item.active ? 'bg-primary/15 text-primary' : 'text-muted-foreground'}`}>
-                        <span>{item.icon}</span>
-                        <span>{item.label}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Main content */}
-                  <div className="flex-1 p-5 overflow-hidden">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <div className="text-sm font-bold">Mesaj Kutusu</div>
-                        <div className="text-xs text-muted-foreground mt-0.5">
-                          <span className="text-primary font-medium">12 yeni mesaj</span> · 3 lead
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs bg-primary/15 text-primary px-2.5 py-1 rounded-full font-semibold">Tümü</span>
-                        <span className="text-xs text-muted-foreground px-2.5 py-1 rounded-full border border-border">Yeni</span>
-                        <span className="text-xs text-muted-foreground px-2.5 py-1 rounded-full border border-border">Lead</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      {FAKE_MESSAGES.map((m, i) => (
-                        <div key={m.name} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                          m.lead
-                            ? 'border-primary/25 bg-primary/5'
-                            : 'border-border/40 hover:bg-black/2 dark:hover:bg-white/2'
-                        }`} style={{ animationDelay: `${i * 0.1}s` }}>
-                          <div className={`w-8 h-8 rounded-xl ${m.color} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
-                            {m.name[0]}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-semibold">{m.name}</span>
-                              {m.lead && (
-                                <span className="text-green-500 font-semibold px-1.5 rounded-full bg-green-500/15"
-                                  style={{ fontSize: 9 }}>Lead</span>
-                              )}
-                            </div>
-                            <p className="text-xs text-muted-foreground truncate mt-0.5">{m.msg}</p>
-                          </div>
-                          <div className="shrink-0 text-right">
-                            <div className="text-xs text-muted-foreground">{m.time}</div>
-                            <div className={`text-xs px-1.5 py-0.5 rounded-full mt-1 font-medium ${
-                              m.status === 'Yeni' ? 'bg-primary/15 text-primary' :
-                              m.status === 'Yanıtlandı' ? 'bg-blue-500/15 text-blue-500' :
-                              'bg-muted text-muted-foreground'
-                            }`}>
-                              {m.status}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Right stats */}
-                  <div className="hidden lg:flex w-48 shrink-0 border-l border-border/50 p-4 flex-col gap-3">
-                    <div className="text-xs font-bold mb-1">Bugünkü Özet</div>
-                    {[
-                      { label: 'Mesaj', value: '24', color: 'text-primary', icon: '💬', gradient: 'stat-blue' },
-                      { label: 'Yeni Lead', value: '5', color: 'text-green-500', icon: '🎯', gradient: 'stat-green' },
-                      { label: 'Yanıt %', value: '96%', color: 'text-blue-500', icon: '📊', gradient: 'stat-cyan' },
-                    ].map((s) => (
-                      <div key={s.label} className="glass-subtle rounded-xl p-3">
-                        <div className="flex items-center justify-between mb-1">
-                          <div className={`w-7 h-7 rounded-lg ${s.gradient} flex items-center justify-center text-sm`}>{s.icon}</div>
-                          <span className={`text-lg font-bold ${s.color}`}>{s.value}</span>
-                        </div>
-                        <div className="text-xs text-muted-foreground">{s.label}</div>
-                      </div>
-                    ))}
-                    <div className="glass-subtle rounded-xl p-3">
-                      <div className="text-xs font-semibold mb-2">Bu Hafta</div>
-                      <div className="flex items-end gap-0.5 h-12">
-                        {[40, 65, 45, 80, 60, 90, 75].map((h, i) => (
-                          <div key={i} className="flex-1 rounded-t-sm stat-blue" style={{ height: `${h}%`, opacity: 0.65 }} />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                </div>
-              </div>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
-
-      {/* ══ PRICING ══════════════════════════════════════════ */}
       <section id="fiyatlandirma" className="py-24 px-4 relative overflow-hidden">
         <div className="absolute inset-0 panel-bg opacity-50" />
-        <div className="max-w-md mx-auto relative z-10">
-          <FadeIn className="text-center mb-12">
+        <div className="max-w-6xl mx-auto relative z-10">
+          <FadeIn className="text-center mb-16">
             <div className="inline-flex items-center gap-2 glass-subtle px-4 py-1.5 rounded-full text-xs text-muted-foreground mb-4">
               💰 Fiyatlandırma
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-              Basit, <span className="gradient-text">Şeffaf</span>
+              Şeffaf, <span className="gradient-text">Basit Fiyatlar</span>
             </h2>
-            <p className="text-muted-foreground">Sürpriz yok. Gizli ücret yok.</p>
+            <p className="text-muted-foreground">Her ürün 1.000₺/ay. Gizli ücret yok, sürpriz yok.</p>
           </FadeIn>
 
-          <FadeIn delay={100}>
-            <div className="glow-violet rounded-3xl">
-              <Card3D className="gradient-border rounded-3xl overflow-hidden">
-                {/* Price header */}
-                <div className="stat-violet p-7 text-white">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold uppercase tracking-widest opacity-70">Standart Plan</span>
-                    <span className="text-xs bg-white/20 px-3 py-1 rounded-full font-semibold">En Popüler ⭐</span>
-                  </div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-5xl font-bold">₺2.000</span>
-                    <span className="text-white/60">/ay</span>
-                  </div>
-                  <p className="text-white/50 text-xs mt-1">IBAN ile ödeme · Admin onayı sonrası erişim</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {PRODUCTS.map((p, i) => (
+              <FadeIn key={p.name} delay={i * 70}>
+                <div className={`glow-${p.glow} rounded-2xl h-full`}>
+                  <Card3D className="glass rounded-2xl overflow-hidden h-full flex flex-col">
+                    <div className={`${p.gradient} p-6 text-white`}>
+                      <div className="text-3xl mb-3">{p.icon}</div>
+                      <h3 className="font-bold text-lg mb-1">{p.name}</h3>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-bold">₺1.000</span>
+                        <span className="text-white/60 text-sm">/ay</span>
+                      </div>
+                    </div>
+                    <div className="p-6 flex flex-col flex-1">
+                      <ul className="space-y-2.5 mb-6 flex-1">
+                        {p.features.map((f) => (
+                          <li key={f} className="flex items-center gap-2.5 text-sm">
+                            <span className="w-5 h-5 rounded-full bg-green-500/15 flex items-center justify-center text-green-500 text-xs shrink-0 font-bold">✓</span>
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
+                      <Link href="/kayit"
+                        className="btn-apple py-3 text-sm font-semibold w-full flex items-center justify-center">
+                        Satın Al →
+                      </Link>
+                      <p className="text-xs text-muted-foreground text-center mt-2">IBAN · Admin onayı sonrası erişim</p>
+                    </div>
+                  </Card3D>
                 </div>
-
-                {/* Features */}
-                <div className="glass p-7 rounded-b-3xl">
-                  <ul className="space-y-3 mb-7">
-                    {[
-                      'Instagram mesaj yönetimi',
-                      'Akıllı lead takibi ve kayıt',
-                      'Ekip üyesi erişimi',
-                      'Günlük / Haftalık / Aylık raporlar',
-                      '2 otomasyon talebi dahil ücretsiz',
-                      'ManyChat entegrasyonu',
-                      'N8N otomasyon desteği',
-                      '7/24 teknik destek',
-                    ].map((item) => (
-                      <li key={item} className="flex items-center gap-3 text-sm">
-                        <span className="w-5 h-5 rounded-full bg-green-500/15 flex items-center justify-center text-green-500 text-xs shrink-0 font-bold">✓</span>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/kayit" className="btn-apple py-3.5 text-sm font-semibold w-full flex items-center justify-center">
-                    Hemen Başla →
-                  </Link>
-                  <p className="text-xs text-muted-foreground text-center mt-3">Hesap oluştur, ödeme yap, erişim aç</p>
-                </div>
-              </Card3D>
-            </div>
-          </FadeIn>
+              </FadeIn>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ══ CTA BANNER ═══════════════════════════════════════ */}
       <section className="mesh-bg py-28 px-4 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] rounded-full"
@@ -566,16 +401,15 @@ export default function LandingPage() {
           <FadeIn>
             <div className="text-5xl mb-6 animate-float inline-block">🦊</div>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-6 text-white leading-tight">
-              Instagram DM&apos;lerini{' '}
-              <span className="shimmer-text">Kaçırmayı Bırak</span>
+              İşinizi Büyütmeye{' '}
+              <span className="shimmer-text">Hemen Başlayın</span>
             </h2>
             <p className="text-white/50 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-              Saniyeler içinde kurulum yap. Ekibinle birlikte yönet.
-              Raporlarla büyü. Leadleri kaçırma.
+              5 güçlü araç, tek platform. Dakikalar içinde kurulum, anında kullanım.
             </p>
             <div className="flex items-center gap-4 justify-center flex-wrap">
               <Link href="/kayit" className="btn-apple text-base px-10 py-4">
-                Ücretsiz Başla →
+                Hemen Başla →
               </Link>
               <Link href="/giris" className="text-sm text-white/50 hover:text-white/90 transition-colors">
                 Zaten hesabım var →
@@ -585,14 +419,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ══ FOOTER ═══════════════════════════════════════════ */}
       <footer className="border-t border-border/50 py-10">
         <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm"
               style={{ background: 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)' }}>🦊</div>
             <span className="font-bold text-sm gradient-text">iFox</span>
-            <span className="text-sm text-muted-foreground">Social Media Control</span>
+            <span className="text-sm text-muted-foreground">Yazılım</span>
           </div>
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} iFox. Tüm hakları saklıdır.

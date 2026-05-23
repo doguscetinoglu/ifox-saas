@@ -9,7 +9,6 @@ export type SessionPayload = {
   name: string
   role: Role
   status: UserStatus
-  customerId: string | null
   expiresAt: Date
 }
 
@@ -57,19 +56,4 @@ export async function getSession(): Promise<SessionPayload | null> {
 export async function deleteSession() {
   const cookieStore = await cookies()
   cookieStore.delete(COOKIE_NAME)
-}
-
-export async function updateSession() {
-  const cookieStore = await cookies()
-  const token = cookieStore.get(COOKIE_NAME)?.value
-  const session = await decrypt(token)
-  if (!session || !token) return null
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-  cookieStore.set(COOKIE_NAME, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    expires: expiresAt,
-    sameSite: 'lax',
-    path: '/',
-  })
 }

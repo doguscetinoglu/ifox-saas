@@ -1,12 +1,15 @@
 import { prisma } from '@/lib/prisma'
-import { formatDate } from '@/lib/utils'
 import UyelerClient from './uyeler-client'
 
 export default async function UyelerPage() {
-  const customers = await prisma.customer.findMany({
-    include: { user: true, package: true, _count: { select: { messages: true, leads: true } } },
+  const users = await prisma.user.findMany({
+    where: { role: 'USER' },
+    include: {
+      subscriptions: { include: { product: true }, orderBy: { createdAt: 'desc' } },
+      paymentRequests: { orderBy: { createdAt: 'desc' }, take: 1 },
+    },
     orderBy: { createdAt: 'desc' },
   })
 
-  return <UyelerClient customers={customers} />
+  return <UyelerClient users={users} />
 }

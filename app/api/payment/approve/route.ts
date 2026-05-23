@@ -1,50 +1,40 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyAdminSession } from '@/lib/dal'
-import { createNotification } from '@/lib/notifications'
-import { sendApprovalEmail } from '@/lib/email'
 
 export async function POST(req: Request) {
   await verifyAdminSession()
 
-  const { paymentId, notes } = await req.json()
-  if (!paymentId) return NextResponse.json({ error: 'paymentId gerekli' }, { status: 400 })
+  const { paymentRequestId } = await req.json()
+  if (!paymentRequestId) return NextResponse.json({ error: 'paymentRequestId gerekli' }, { status: 400 })
 
-  const payment = await prisma.paymentRequest.findUnique({
-    where: { id: paymentId },
-    include: { customer: { include: { user: true } } },
+  const paymentRequest = await prisma.paymentRequest.findUnique({
+    where: { id: paymentRequestId },
+    include: { user: true, product: true },
   })
-  if (!payment) return NextResponse.json({ error: 'Ödeme bulunamadı' }, { status: 404 })
-
-  const admin = await prisma.user.findFirst({ where: { role: 'ADMIN' } })
+  if (!paymentRequest) return NextResponse.json({ error: 'Ödeme talebi bulunamadı' }, { status: 404 })
 
   await prisma.$transaction([
     prisma.paymentRequest.update({
-      where: { id: paymentId },
-      data: { status: 'APPROVED', reviewedAt: new Date(), reviewedBy: admin?.id, notes },
+      where: { id: paymentRequestId },
+      data: { status: 'APPROVED', reviewedAt: new Date() },
     }),
-    prisma.user.update({
-      where: { id: payment.customer.userId },
-      data: { status: 'ACTIVE' },
-    }),
-    prisma.customer.update({
-      where: { id: payment.customerId },
-      data: { approvedAt: new Date(), approvedBy: admin?.id },
+    prisma.userSubscription.upsert({
+      where: {
+        userId_productId: {
+          userId: paymentRequest.userId,
+          productId: paymentRequest.productId,
+        },
+      },
+      create: {
+        userId: paymentRequest.userId,
+        productId: paymentRequest.productId,
+        status: 'ACTIVE',
+        startedAt: new Date(),
+      },
+      update: { status: 'ACTIVE', startedAt: new Date() },
     }),
   ])
 
-  await createNotification({
-    userId: payment.customer.userId,
-    type: 'ACCOUNT_APPROVED',
-    title: 'Hesabınız Onaylandı',
-    body: 'Ödemeniz onaylandı. Panele giriş yapabilirsiniz.',
-  })
-
-  try {
-    await sendApprovalEmail(payment.customer.user.email, payment.customer.user.name)
-  } catch {
-    // non-critical
-  }
-
-  return NextResponse.json({ success: true })
+  return NextResponse.json({ ok: true })
 }

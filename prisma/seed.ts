@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { PrismaClient } from '../app/generated/prisma/client'
 import { PrismaNeon } from '@prisma/adapter-neon'
 import bcrypt from 'bcryptjs'
@@ -5,34 +6,30 @@ import bcrypt from 'bcryptjs'
 const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL! })
 const prisma = new PrismaClient({ adapter })
 
-async function main() {
-  // Create default package
-  const pkg = await prisma.package.upsert({
-    where: { id: 'default-package' },
-    update: { price: 2000, automationLimit: 2 },
-    create: { id: 'default-package', name: 'iFox Standart', price: 2000, automationLimit: 2 },
-  })
-  console.log('Package created:', pkg.name)
+const PRODUCTS = [
+  { id: 'ciro-takip', name: 'Ciro Takip', slug: 'ciro-takip', description: 'Günlük, haftalık ve aylık ciro takibinizi kolayca yapın. Satış performansınızı analiz edin, hedef belirleyin.', price: 1000, icon: '📈', gradient: 'stat-blue', isRequest: false, sortOrder: 1 },
+  { id: 'borc-takip', name: 'Borç Takip', slug: 'borc-takip', description: 'Müşteri alacak ve borçlarınızı tek ekranda yönetin. Vadesi geçen ödemeleri anında görün.', price: 1000, icon: '💰', gradient: 'stat-green', isRequest: false, sortOrder: 2 },
+  { id: 'fox-crm', name: 'Fox CRM', slug: 'fox-crm', description: 'Müşteri ilişkilerini güçlendirin. Destek talepleri, proje takibi ve müşteri yönetimi tek panelde.', price: 1000, icon: '🦊', gradient: 'stat-violet', isRequest: false, sortOrder: 3 },
+  { id: 'otomasyon', name: 'Sosyal Medya Otomasyonu', slug: 'otomasyon', description: 'Instagram, Facebook ve diğer platformlarda otomasyonlar kurun. Uzman ekibimiz sizin için özel kurulum yapar.', price: 1000, icon: '🤖', gradient: 'stat-rose', isRequest: true, sortOrder: 4 },
+  { id: 'raporlama', name: 'Raporlama', slug: 'raporlama', description: 'İşletmenizin tüm verilerini görselleştirin. PDF ve Excel export ile profesyonel raporlar oluşturun.', price: 1000, icon: '📊', gradient: 'stat-cyan', isRequest: false, sortOrder: 5 },
+]
 
-  // Create admin user
+async function main() {
+  for (const p of PRODUCTS) {
+    await prisma.product.upsert({ where: { id: p.id }, update: p, create: p })
+    console.log('Ürün:', p.name)
+  }
+
   const adminEmail = process.env.ADMIN_EMAIL || 'dogus5455@gmail.com'
   const adminPassword = process.env.ADMIN_PASSWORD || 'admin123456'
   const hash = await bcrypt.hash(adminPassword, 12)
 
-  const admin = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: adminEmail },
     update: {},
-    create: {
-      email: adminEmail,
-      password: hash,
-      name: 'Admin',
-      role: 'ADMIN',
-      status: 'ACTIVE',
-    },
+    create: { email: adminEmail, password: hash, name: 'Admin', role: 'ADMIN', status: 'ACTIVE' },
   })
-  console.log('Admin created:', admin.email)
+  console.log('Admin:', adminEmail)
 }
 
-main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect())
+main().catch(console.error).finally(() => prisma.$disconnect())

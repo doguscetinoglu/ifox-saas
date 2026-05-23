@@ -7,14 +7,14 @@ datasource db {
   provider = "postgresql"
 }
 
+// ─── Platform ────────────────────────────────────────────────────────────────
+
 enum Role {
   ADMIN
-  OWNER
-  EMPLOYEE
+  USER
 }
 
 enum UserStatus {
-  PENDING
   ACTIVE
   SUSPENDED
 }
@@ -25,20 +25,10 @@ enum PaymentStatus {
   REJECTED
 }
 
-enum SocialPlatform {
-  INSTAGRAM
-}
-
-enum SocialAccountStatus {
+enum SubscriptionStatus {
   PENDING
-  CONNECTED
-  DISCONNECTED
-}
-
-enum MessageStatus {
-  NEW
-  REPLIED
-  CLOSED
+  ACTIVE
+  CANCELLED
 }
 
 enum AutomationStatus {
@@ -53,19 +43,85 @@ model User {
   email       String     @unique
   password    String
   name        String
-  role        Role       @default(OWNER)
-  status      UserStatus @default(PENDING)
+  role        Role       @default(USER)
+  status      UserStatus @default(ACTIVE)
   companyName String?
+  phone       String?
 
-  customerId String?
-  customer   Customer? @relation("EmployeeCustomer", fields: [customerId], references: [id])
+  subscriptions       UserSubscription[]
+  paymentRequests     PaymentRequest[]
+  automationRequests  AutomationRequest[]
+  passwordResetTokens PasswordResetToken[]
 
-  ownedCustomer        Customer?             @relation("OwnerCustomer")
-  messageReplies       MessageReply[]
-  notifications        Notification[]
-  leadsCreated         Lead[]                @relation("LeadCreatedBy")
-  paymentsReviewed     PaymentRequest[]      @relation("PaymentReviewedBy")
-  passwordResetTokens  PasswordResetToken[]
+  // Modül ilişkileri
+  ciroKayitlar CiroKayit[]
+  ciroHedefi   CiroHedef?
+  borcMusteriler BorcMusteri[]
+  crmMusteriler  CrmMusteri[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id          String  @id
+  name        String
+  slug        String  @unique
+  description String
+  price       Int     @default(1000)
+  icon        String
+  gradient    String
+  isRequest   Boolean @default(false)
+  sortOrder   Int     @default(0)
+
+  subscriptions      UserSubscription[]
+  paymentRequests    PaymentRequest[]
+  automationRequests AutomationRequest[]
+}
+
+model UserSubscription {
+  id        String             @id @default(cuid())
+  userId    String
+  user      User               @relation(fields: [userId], references: [id])
+  productId String
+  product   Product            @relation(fields: [productId], references: [id])
+  status    SubscriptionStatus @default(PENDING)
+  startedAt DateTime?
+  expiresAt DateTime?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@unique([userId, productId])
+  @@index([userId])
+}
+
+model PaymentRequest {
+  id         String        @id @default(cuid())
+  userId     String
+  user       User          @relation(fields: [userId], references: [id])
+  productId  String
+  product    Product       @relation(fields: [productId], references: [id])
+  amount     Int
+  status     PaymentStatus @default(PENDING)
+  notes      String?
+  notifiedAt DateTime?
+  reviewedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([status])
+  @@index([userId])
+}
+
+model AutomationRequest {
+  id          String           @id @default(cuid())
+  userId      String
+  user        User             @relation(fields: [userId], references: [id])
+  productId   String
+  product     Product          @relation(fields: [productId], references: [id])
+  description String?
+  status      AutomationStatus @default(PENDING)
+  notes       String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -81,135 +137,163 @@ model PasswordResetToken {
   createdAt DateTime  @default(now())
 }
 
-model Customer {
-  id                     String    @id @default(cuid())
-  userId                 String    @unique
-  user                   User      @relation("OwnerCustomer", fields: [userId], references: [id])
-  companyName            String
-  packageId              String
-  package                Package   @relation(fields: [packageId], references: [id])
-  automationRequestCount Int       @default(0)
-  approvedAt             DateTime?
-  approvedBy             String?
+// ─── Modül: Ciro Takip ───────────────────────────────────────────────────────
 
-  employees          User[]              @relation("EmployeeCustomer")
-  socialAccounts     SocialAccount[]
-  messages           Message[]
-  leads              Lead[]
-  automationRequests AutomationRequest[]
-  paymentRequests    PaymentRequest[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Package {
-  id              String     @id @default(cuid())
-  name            String
-  price           Int
-  automationLimit Int        @default(2)
-  customers       Customer[]
-}
-
-model PaymentRequest {
-  id         String        @id @default(cuid())
-  customerId String
-  customer   Customer      @relation(fields: [customerId], references: [id])
-  amount     Int
-  status     PaymentStatus @default(PENDING)
-  notifiedAt DateTime?
-  reviewedAt DateTime?
-  reviewedBy String?
-  reviewer   User?         @relation("PaymentReviewedBy", fields: [reviewedBy], references: [id])
-  notes      String?
-
-  createdAt DateTime @default(now())
-}
-
-model SocialAccount {
-  id             String              @id @default(cuid())
-  customerId     String
-  customer       Customer            @relation(fields: [customerId], references: [id])
-  platform       SocialPlatform      @default(INSTAGRAM)
-  handle         String
-  manychatPageId String?
-  status         SocialAccountStatus @default(PENDING)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Message {
-  id            String         @id @default(cuid())
-  customerId    String
-  customer      Customer       @relation(fields: [customerId], references: [id])
-  platform      SocialPlatform
-  externalId    String         @unique
-  senderName    String
-  senderContact String?
-  content       String
-  receivedAt    DateTime       @default(now())
-  isLead        Boolean        @default(false)
-  status        MessageStatus  @default(NEW)
-  threadId      String?
-
-  replies MessageReply[]
-  lead    Lead?
-
-  @@index([customerId, status])
-  @@index([customerId, receivedAt])
-}
-
-model MessageReply {
-  id                String   @id @default(cuid())
-  messageId         String
-  message           Message  @relation(fields: [messageId], references: [id])
-  userId            String
-  user              User     @relation(fields: [userId], references: [id])
-  content           String
-  sentAt            DateTime @default(now())
-  sentViaManychat   Boolean  @default(false)
-  manychatMessageId String?
-}
-
-model Lead {
-  id         String   @id @default(cuid())
-  customerId String
-  customer   Customer @relation(fields: [customerId], references: [id])
-  messageId  String?  @unique
-  message    Message? @relation(fields: [messageId], references: [id])
-  name       String
-  contact    String?
-  notes      String?
-  createdAt  DateTime @default(now())
-  createdBy  String
-  creator    User     @relation("LeadCreatedBy", fields: [createdBy], references: [id])
-
-  @@index([customerId])
-}
-
-model AutomationRequest {
-  id          String           @id @default(cuid())
-  customerId  String
-  customer    Customer         @relation(fields: [customerId], references: [id])
-  description String
-  isExtra     Boolean          @default(false)
-  extraPrice  Int?
-  status      AutomationStatus @default(PENDING)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Notification {
+model CiroKayit {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  type      String
-  title     String
-  body      String
-  isRead    Boolean  @default(false)
+  tarih     DateTime
+  tutar     Float
+  kategori  String?
+  aciklama  String?
   createdAt DateTime @default(now())
 
-  @@index([userId, isRead])
+  @@index([userId, tarih])
+}
+
+model CiroHedef {
+  id       String @id @default(cuid())
+  userId   String @unique
+  user     User   @relation(fields: [userId], references: [id])
+  aylik    Float  @default(0)
+  haftalik Float  @default(0)
+  gunluk   Float  @default(0)
+}
+
+// ─── Modül: Borç Takip ───────────────────────────────────────────────────────
+
+enum BorcDurum {
+  BEKLIYOR
+  KISMI
+  ODENDI
+  GECIKTI
+}
+
+model BorcMusteri {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  kod       String
+  ad        String
+  telefon   String?
+  email     String?
+  sehir     String?
+  borclar   Borc[]
+  odemeler  BorcOdeme[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, kod])
+  @@index([userId])
+}
+
+model Borc {
+  id          String      @id @default(cuid())
+  musteri     BorcMusteri @relation(fields: [musteriId], references: [id], onDelete: Cascade)
+  musteriId   String
+  belgeNo     String?
+  tutar       Float
+  vadeTarihi  DateTime
+  belgeTarihi DateTime
+  durum       BorcDurum   @default(BEKLIYOR)
+  aciklama    String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([musteriId])
+}
+
+model BorcOdeme {
+  id           String      @id @default(cuid())
+  musteri      BorcMusteri @relation(fields: [musteriId], references: [id], onDelete: Cascade)
+  musteriId    String
+  tutar        Float
+  odenmeTarihi DateTime
+  yontem       String?
+  aciklama     String?
+  createdAt    DateTime    @default(now())
+
+  @@index([musteriId])
+}
+
+// ─── Modül: Fox CRM ──────────────────────────────────────────────────────────
+
+model CrmMusteri {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  ad        String
+  email     String?
+  telefon   String?
+  sirket    String?
+  notlar    String?
+  tickets   CrmTicket[]
+  projeler  CrmProje[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([userId])
+}
+
+model CrmTicket {
+  id        String      @id @default(cuid())
+  userId    String
+  musteriId String?
+  musteri   CrmMusteri? @relation(fields: [musteriId], references: [id])
+  konu      String
+  icerik    String
+  durum     String      @default("Yeni")
+  oncelik   String      @default("Normal")
+  yanitlar  CrmYanit[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([userId])
+}
+
+model CrmYanit {
+  id        String    @id @default(cuid())
+  ticketId  String
+  ticket    CrmTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId    String
+  icerik    String
+  dahili    Boolean   @default(false)
+  createdAt DateTime  @default(now())
+}
+
+model CrmProje {
+  id        String        @id @default(cuid())
+  userId    String
+  musteriId String?
+  musteri   CrmMusteri?   @relation(fields: [musteriId], references: [id])
+  ad        String
+  aciklama  String?
+  durum     String        @default("Devam Ediyor")
+  adimlar   CrmProjeAdim[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([userId])
+}
+
+model CrmProjeAdim {
+  id      String     @id @default(cuid())
+  projeId String
+  proje   CrmProje   @relation(fields: [projeId], references: [id], onDelete: Cascade)
+  ad      String
+  sira    Int        @default(0)
+  durum   String     @default("Beklemede")
+  gorevler CrmGorev[]
+}
+
+model CrmGorev {
+  id        String       @id @default(cuid())
+  adimId    String
+  adim      CrmProjeAdim @relation(fields: [adimId], references: [id], onDelete: Cascade)
+  baslik    String
+  aciklama  String?
+  durum     String       @default("Beklemede")
+  sonTarih  DateTime?
+  createdAt DateTime     @default(now())
 }
