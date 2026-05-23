@@ -18,6 +18,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     'borc-takip': '💰',
     'fox-crm': '🦊',
     'otomasyon': '🤖',
+    'sirket-otomasyonu': '⚙️',
     'raporlama': '📊',
   }
 

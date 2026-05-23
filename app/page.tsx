@@ -116,17 +116,34 @@ const PRODUCTS = [
     icon: '🤖',
     name: 'Sosyal Medya Otomasyonu',
     slug: 'otomasyon',
-    desc: 'N8N ve ManyChat ile iş akışlarınızı otomatikleştirin. İnsan müdahalesine gerek kalmadan çalışsın.',
+    desc: 'ManyChat ile Instagram, Messenger ve WhatsApp\'ta bot akışları kurun. Uzman ekibimiz özel kurulum yapar.',
     gradient: 'stat-rose',
     glow: 'rose',
-    features: ['N8N entegrasyonu', 'ManyChat bağlantısı', 'Otomatik yanıt akışları', 'Webhook desteği'],
+    features: ['ManyChat bot akışları', 'Instagram DM otomasyonu', 'Lead capture & segmentasyon', 'Growth Tools'],
     examples: [
       'Instagram DM\'e otomatik yanıt',
       'Yorum yap → Özel link gönder',
       'Yeni takipçi hoş geldin akışı',
-      'N8N ile Shopify entegrasyonu',
-      'Lead form → CRM otomasyonu',
-      'WhatsApp bildirim otomasyonu',
+      '"Fiyat" yaz → Ürün kataloğu aç',
+      'Story mention → DM gönder',
+      'Terk edilen sepet → Hatırlatma',
+    ],
+  },
+  {
+    icon: '⚙️',
+    name: 'Şirket Otomasyonu',
+    slug: 'sirket-otomasyonu',
+    desc: 'N8N ile şirket içi iş akışlarınızı otomatikleştirin. 400+ uygulama entegrasyonu, API bağlantıları.',
+    gradient: 'stat-orange',
+    glow: 'orange',
+    features: ['N8N iş akışı tasarımcısı', '400+ uygulama entegrasyonu', 'Webhook & API bağlantısı', 'Zamanlanmış görevler'],
+    examples: [
+      'Sipariş → Muhasebe + Slack bildirimi',
+      'Form dolumu → CRM lead kaydı',
+      'Zamanlanmış rapor → E-posta',
+      'Shopify → Google Sheets senkron',
+      'Otomatik fatura oluşturma',
+      'Hata tespiti → Otomatik retry',
     ],
   },
   {
@@ -175,7 +192,7 @@ function PricingFlipCard({ product, delay }: { product: typeof PRODUCTS[0]; dela
               </div>
             </div>
             <div className="p-6 flex flex-col flex-1">
-              <ul className="space-y-2.5 mb-4 flex-1">
+              <ul className="space-y-2.5 mb-5 flex-1">
                 {product.features.map((f) => (
                   <li key={f} className="flex items-center gap-2.5 text-sm">
                     <span className="w-5 h-5 rounded-full bg-green-500/15 flex items-center justify-center text-green-500 text-xs shrink-0 font-bold">✓</span>
@@ -183,16 +200,16 @@ function PricingFlipCard({ product, delay }: { product: typeof PRODUCTS[0]; dela
                   </li>
                 ))}
               </ul>
-              <button
-                onClick={() => setFlipped(true)}
-                className="w-full mb-2 py-2 rounded-xl text-xs font-medium border border-dashed border-border/60 text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors cursor-pointer"
-              >
-                💡 Örneklere bak →
-              </button>
               <Link href="/kayit"
-                className="btn-apple py-3 text-sm font-semibold w-full flex items-center justify-center">
+                className="btn-apple py-2.5 text-sm font-semibold w-full flex items-center justify-center mb-2">
                 Satın Al →
               </Link>
+              <button
+                onClick={() => setFlipped(true)}
+                className="w-full py-2 rounded-xl text-xs font-medium border border-dashed border-border/60 text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors cursor-pointer"
+              >
+                💡 Örnek senaryoları gör →
+              </button>
               <p className="text-xs text-muted-foreground text-center mt-2">IBAN · Admin onayı sonrası erişim</p>
             </div>
           </div>
