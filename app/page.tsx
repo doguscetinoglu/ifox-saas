@@ -69,6 +69,14 @@ const PRODUCTS = [
     gradient: 'stat-blue',
     glow: 'blue',
     features: ['Gelir kaydı ve kategori', 'Haftalık/aylık hedef', 'Grafik analiz', 'CSV dışa aktarım'],
+    examples: [
+      'Günlük kasa kapanış kaydı',
+      'Haftalık satış büyüme raporu',
+      'Kategori bazlı gelir analizi',
+      'Aylık hedef takip paneli',
+      'Sezon bazlı ciro karşılaştırma',
+      'Çoklu şube ciro konsolidasyonu',
+    ],
   },
   {
     icon: '💰',
@@ -78,6 +86,14 @@ const PRODUCTS = [
     gradient: 'stat-green',
     glow: 'green',
     features: ['Müşteri bazlı borç kaydı', 'Vade tarihi uyarıları', 'Kısmi ödeme takibi', 'Gecikme raporu'],
+    examples: [
+      'Toptan satış vadeli tahsilat',
+      'Müşteri bazlı borç izleme',
+      'Gecikmiş ödeme listesi',
+      'Kısmi ödeme planı yönetimi',
+      'Çek/senet vade takibi',
+      'Aylık alacak-borç özeti',
+    ],
   },
   {
     icon: '🦊',
@@ -87,6 +103,14 @@ const PRODUCTS = [
     gradient: 'stat-violet',
     glow: 'violet',
     features: ['Müşteri veritabanı', 'Destek bileti sistemi', 'Proje ve görev yönetimi', '7/24 takip'],
+    examples: [
+      'Yeni müşteri onboarding süreci',
+      'Teknik destek bileti yönetimi',
+      'Proje teslimat aşama takibi',
+      'Müşteri memnuniyet takibi',
+      'İç ekip görev ataması',
+      'Çoklu proje portföy yönetimi',
+    ],
   },
   {
     icon: '🤖',
@@ -96,6 +120,14 @@ const PRODUCTS = [
     gradient: 'stat-rose',
     glow: 'rose',
     features: ['N8N entegrasyonu', 'ManyChat bağlantısı', 'Otomatik yanıt akışları', 'Webhook desteği'],
+    examples: [
+      'Instagram DM\'e otomatik yanıt',
+      'Yorum yap → Özel link gönder',
+      'Yeni takipçi hoş geldin akışı',
+      'N8N ile Shopify entegrasyonu',
+      'Lead form → CRM otomasyonu',
+      'WhatsApp bildirim otomasyonu',
+    ],
   },
   {
     icon: '📊',
@@ -105,8 +137,102 @@ const PRODUCTS = [
     gradient: 'stat-cyan',
     glow: 'cyan',
     features: ['Çoklu modül raporu', 'Tarih bazlı filtreleme', 'Grafik ve tablo görünümü', 'PDF/CSV export'],
+    examples: [
+      'Aylık işletme performans raporu',
+      'Borç ve tahsilat özeti',
+      'CRM aktivite analizi',
+      'Çoklu modül konsolide dashboard',
+      'Yıllık büyüme karşılaştırması',
+      'Kategori bazlı detaylı analiz',
+    ],
   },
 ]
+
+function PricingFlipCard({ product, delay }: { product: typeof PRODUCTS[0]; delay: number }) {
+  const [flipped, setFlipped] = useState(false)
+
+  return (
+    <FadeIn delay={delay}>
+      <div className={`glow-${product.glow} rounded-2xl h-full`} style={{ perspective: '1200px' }}>
+        <div
+          style={{
+            transformStyle: 'preserve-3d',
+            transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+            transition: 'transform 0.55s cubic-bezier(0.23,1,0.32,1)',
+            position: 'relative',
+            minHeight: '360px',
+          }}
+        >
+          {/* Front */}
+          <div className="glass rounded-2xl overflow-hidden h-full flex flex-col"
+            style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', position: 'absolute', inset: 0 }}>
+            <div className={`${product.gradient} p-6 text-white`}>
+              <div className="text-3xl mb-3">{product.icon}</div>
+              <h3 className="font-bold text-lg mb-1">{product.name}</h3>
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-bold">₺1.000</span>
+                <span className="text-white/60 text-sm">/ay</span>
+              </div>
+            </div>
+            <div className="p-6 flex flex-col flex-1">
+              <ul className="space-y-2.5 mb-4 flex-1">
+                {product.features.map((f) => (
+                  <li key={f} className="flex items-center gap-2.5 text-sm">
+                    <span className="w-5 h-5 rounded-full bg-green-500/15 flex items-center justify-center text-green-500 text-xs shrink-0 font-bold">✓</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => setFlipped(true)}
+                className="w-full mb-2 py-2 rounded-xl text-xs font-medium border border-dashed border-border/60 text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors cursor-pointer"
+              >
+                💡 Örneklere bak →
+              </button>
+              <Link href="/kayit"
+                className="btn-apple py-3 text-sm font-semibold w-full flex items-center justify-center">
+                Satın Al →
+              </Link>
+              <p className="text-xs text-muted-foreground text-center mt-2">IBAN · Admin onayı sonrası erişim</p>
+            </div>
+          </div>
+
+          {/* Back */}
+          <div className="glass rounded-2xl overflow-hidden h-full flex flex-col"
+            style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)', position: 'absolute', inset: 0 }}>
+            <div className={`${product.gradient} px-5 py-4 text-white flex items-center justify-between`}>
+              <div>
+                <p className="text-xs text-white/60 font-medium uppercase tracking-wide">Örnek Kullanımlar</p>
+                <h3 className="font-bold text-base">{product.name}</h3>
+              </div>
+              <button onClick={() => setFlipped(false)}
+                className="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/30 flex items-center justify-center text-sm transition-colors cursor-pointer">
+                ←
+              </button>
+            </div>
+            <div className="p-5 flex flex-col flex-1">
+              <ul className="space-y-2 flex-1">
+                {product.examples.map((ex, i) => (
+                  <li key={ex} className="flex items-start gap-3">
+                    <span className="w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5"
+                      style={{ background: 'linear-gradient(135deg,rgba(124,124,248,0.2),rgba(139,92,246,0.2))', color: '#a78bfa' }}>
+                      {i + 1}
+                    </span>
+                    <span className="text-sm">{ex}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link href="/kayit"
+                className="btn-apple py-3 text-sm font-semibold w-full flex items-center justify-center mt-4">
+                Hemen Başla →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </FadeIn>
+  )
+}
 
 export default function LandingPage() {
   return (
@@ -289,6 +415,14 @@ export default function LandingPage() {
                     </div>
                     <h3 className="font-semibold text-base mb-2">{p.name}</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed mb-4 flex-1">{p.desc}</p>
+                    <ul className="space-y-1.5 mb-4">
+                      {p.features.map((f) => (
+                        <li key={f} className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="w-4 h-4 rounded-full bg-green-500/15 text-green-500 text-[10px] flex items-center justify-center shrink-0 font-bold">✓</span>
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
                     <Link href="/kayit"
                       className="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
                       Satın Al →
@@ -346,7 +480,7 @@ export default function LandingPage() {
       <section id="fiyatlandirma" className="py-24 px-4 relative overflow-hidden">
         <div className="absolute inset-0 panel-bg opacity-50" />
         <div className="max-w-6xl mx-auto relative z-10">
-          <FadeIn className="text-center mb-16">
+          <FadeIn className="text-center mb-6">
             <div className="inline-flex items-center gap-2 glass-subtle px-4 py-1.5 rounded-full text-xs text-muted-foreground mb-4">
               💰 Fiyatlandırma
             </div>
@@ -356,37 +490,16 @@ export default function LandingPage() {
             <p className="text-muted-foreground">Her ürün 1.000₺/ay. Gizli ücret yok, sürpriz yok.</p>
           </FadeIn>
 
+          <FadeIn delay={80}>
+            <p className="text-center text-xs text-muted-foreground mb-10 flex items-center justify-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              Kartlardaki &quot;Örneklere bak&quot; butonuna tıklayarak örnek kullanım senaryolarını görün
+            </p>
+          </FadeIn>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {PRODUCTS.map((p, i) => (
-              <FadeIn key={p.name} delay={i * 70}>
-                <div className={`glow-${p.glow} rounded-2xl h-full`}>
-                  <Card3D className="glass rounded-2xl overflow-hidden h-full flex flex-col">
-                    <div className={`${p.gradient} p-6 text-white`}>
-                      <div className="text-3xl mb-3">{p.icon}</div>
-                      <h3 className="font-bold text-lg mb-1">{p.name}</h3>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-bold">₺1.000</span>
-                        <span className="text-white/60 text-sm">/ay</span>
-                      </div>
-                    </div>
-                    <div className="p-6 flex flex-col flex-1">
-                      <ul className="space-y-2.5 mb-6 flex-1">
-                        {p.features.map((f) => (
-                          <li key={f} className="flex items-center gap-2.5 text-sm">
-                            <span className="w-5 h-5 rounded-full bg-green-500/15 flex items-center justify-center text-green-500 text-xs shrink-0 font-bold">✓</span>
-                            {f}
-                          </li>
-                        ))}
-                      </ul>
-                      <Link href="/kayit"
-                        className="btn-apple py-3 text-sm font-semibold w-full flex items-center justify-center">
-                        Satın Al →
-                      </Link>
-                      <p className="text-xs text-muted-foreground text-center mt-2">IBAN · Admin onayı sonrası erişim</p>
-                    </div>
-                  </Card3D>
-                </div>
-              </FadeIn>
+              <PricingFlipCard key={p.name} product={p} delay={i * 70} />
             ))}
           </div>
         </div>
