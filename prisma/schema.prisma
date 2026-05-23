@@ -54,8 +54,8 @@ model User {
   passwordResetTokens PasswordResetToken[]
 
   // Modül ilişkileri
-  ciroKayitlar CiroKayit[]
-  ciroHedefi   CiroHedef?
+  ciroKayitlar  CiroKayit[]
+  ciroHedefleri CiroHedef[]
   borcMusteriler BorcMusteri[]
   crmMusteriler  CrmMusteri[]
 
@@ -140,25 +140,28 @@ model PasswordResetToken {
 // ─── Modül: Ciro Takip ───────────────────────────────────────────────────────
 
 model CiroKayit {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  tarih     DateTime
-  tutar     Float
-  kategori  String?
-  aciklama  String?
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  tarih      DateTime
+  tutar      Float
+  satisAdedi Int      @default(0)
+  kategori   String?
+  aciklama   String?
+  createdAt  DateTime @default(now())
 
   @@index([userId, tarih])
 }
 
 model CiroHedef {
-  id       String @id @default(cuid())
-  userId   String @unique
-  user     User   @relation(fields: [userId], references: [id])
-  aylik    Float  @default(0)
-  haftalik Float  @default(0)
-  gunluk   Float  @default(0)
+  id         String @id @default(cuid())
+  userId     String
+  user       User   @relation(fields: [userId], references: [id])
+  ayKey      String
+  ciroHedef  Float  @default(0)
+  satisHedef Int    @default(0)
+
+  @@unique([userId, ayKey])
 }
 
 // ─── Modül: Borç Takip ───────────────────────────────────────────────────────

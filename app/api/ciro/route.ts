@@ -2,51 +2,52 @@ import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 
-export async function GET(request: Request) {
+export async function GET() {
   const session = await getSession()
   if (!session?.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { searchParams } = new URL(request.url)
-  const period = searchParams.get('period') || 'month'
-  const now = new Date()
-
-  let startDate: Date
-  if (period === 'today') {
-    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  } else if (period === 'week') {
-    startDate = new Date(now)
-    startDate.setDate(now.getDate() - 6)
-    startDate.setHours(0, 0, 0, 0)
-  } else {
-    startDate = new Date(now.getFullYear(), now.getMonth(), 1)
-  }
-
   const kayitlar = await prisma.ciroKayit.findMany({
-    where: { userId: session.userId, tarih: { gte: startDate } },
-    orderBy: { tarih: 'desc' },
+    where: { userId: session.userId },
+    orderBy: { tarih: 'asc' },
   })
 
-  return NextResponse.json(kayitlar)
+  return NextResponse.json(kayitlar.map((k) => ({
+    id: k.id,
+    date: k.tarih.toISOString().slice(0, 10),
+    ciro: k.tutar,
+    sales: k.satisAdedi,
+  })))
 }
 
 export async function POST(request: Request) {
   const session = await getSession()
   if (!session?.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await request.json()
-  const { tarih, tutar, kategori, aciklama } = body
+  const { date, ciro, sales } = await request.json()
+  if (!date || ciro == null) return NextResponse.json({ error: 'date ve ciro gerekli' }, { status: 400 })
 
-  if (!tarih || !tutar) return NextResponse.json({ error: 'Tarih ve tutar gerekli' }, { status: 400 })
+  const dayStart = new Date(date + 'T00:00:00.000Z')
+  const dayEnd = new Date(date + 'T23:59:59.999Z')
 
-  const kayit = await prisma.ciroKayit.create({
-    data: {
-      userId: session.userId,
-      tarih: new Date(tarih),
-      tutar: parseFloat(tutar),
-      kategori: kategori || null,
-      aciklama: aciklama || null,
-    },
+  const existing = await prisma.ciroKayit.findFirst({
+    where: { userId: session.userId, tarih: { gte: dayStart, lte: dayEnd } },
   })
 
-  return NextResponse.json(kayit, { status: 201 })
+  const data = { tutar: parseFloat(ciro), satisAdedi: parseInt(sales) || 0 }
+
+  let kayit
+  if (existing) {
+    kayit = await prisma.ciroKayit.update({ where: { id: existing.id }, data })
+  } else {
+    kayit = await prisma.ciroKayit.create({
+      data: { userId: session.userId, tarih: new Date(date + 'T12:00:00.000Z'), ...data },
+    })
+  }
+
+  return NextResponse.json({
+    id: kayit.id,
+    date,
+    ciro: kayit.tutar,
+    sales: kayit.satisAdedi,
+  }, { status: existing ? 200 : 201 })
 }

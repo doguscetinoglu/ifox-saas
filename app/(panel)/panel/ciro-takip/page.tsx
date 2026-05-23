@@ -3,6 +3,9 @@ import { verifyActiveSession } from '@/lib/dal'
 import { prisma } from '@/lib/prisma'
 import CiroClient from './ciro-client'
 
+type Entry = { id: string; date: string; ciro: number; sales: number }
+type GoalMap = Record<string, { ciroGoal: number; salesGoal: number }>
+
 export default async function CiroTakipPage() {
   const session = await verifyActiveSession()
 
@@ -11,32 +14,25 @@ export default async function CiroTakipPage() {
   })
   if (sub?.status !== 'ACTIVE') redirect('/panel')
 
-  const now = new Date()
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-  const startOfWeek = new Date(now)
-  startOfWeek.setDate(now.getDate() - 6)
-  startOfWeek.setHours(0, 0, 0, 0)
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-
-  const [kayitlar, hedef] = await Promise.all([
+  const [kayitlar, hedefler] = await Promise.all([
     prisma.ciroKayit.findMany({
-      where: { userId: session.userId, tarih: { gte: startOfMonth } },
-      orderBy: { tarih: 'desc' },
+      where: { userId: session.userId },
+      orderBy: { tarih: 'asc' },
     }),
-    prisma.ciroHedef.findUnique({ where: { userId: session.userId } }),
+    prisma.ciroHedef.findMany({ where: { userId: session.userId } }),
   ])
 
-  const bugün = kayitlar.filter((k) => k.tarih >= startOfToday).reduce((s, k) => s + k.tutar, 0)
-  const hafta = kayitlar.filter((k) => k.tarih >= startOfWeek).reduce((s, k) => s + k.tutar, 0)
-  const ay = kayitlar.reduce((s, k) => s + k.tutar, 0)
+  const entries: Entry[] = kayitlar.map((k) => ({
+    id: k.id,
+    date: k.tarih.toISOString().slice(0, 10),
+    ciro: k.tutar,
+    sales: k.satisAdedi,
+  }))
 
-  return (
-    <CiroClient
-      kayitlar={kayitlar.map((k) => ({ ...k, tarih: k.tarih.toISOString() }))}
-      hedef={hedef}
-      bugün={bugün}
-      hafta={hafta}
-      ay={ay}
-    />
-  )
+  const goals: GoalMap = {}
+  for (const h of hedefler) {
+    goals[h.ayKey] = { ciroGoal: h.ciroHedef, salesGoal: h.satisHedef }
+  }
+
+  return <CiroClient entries={entries} goals={goals} />
 }
